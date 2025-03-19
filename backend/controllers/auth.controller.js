@@ -14,7 +14,6 @@ const generateToken = (user) => {
   });
 };
 
-
 // export const register = async (req, res) => {
 //   try {
 //     const { name, email, password, role } = req.body;
@@ -52,8 +51,6 @@ const generateToken = (user) => {
 //     res.status(500).json({ message: "Server error", error: error.message });
 //   }
 // };
-
-
 
 export const register = async (req, res) => {
     try {
@@ -105,8 +102,6 @@ export const register = async (req, res) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
-
-
 
 // LOGIN USER
 export const login = async (req, res) => {
