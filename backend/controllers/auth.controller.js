@@ -53,7 +53,7 @@ export const register = async (req, res) => {
         userId: newUser._id, 
         name, 
         email, 
-        department, // ✅ Include department
+        department, // Include department
       });
       await faculty.save();
     } else if (role.toLowerCase() === "admin") {
