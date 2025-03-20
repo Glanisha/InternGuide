@@ -14,94 +14,67 @@ const generateToken = (user) => {
   });
 };
 
-// export const register = async (req, res) => {
-//   try {
-//     const { name, email, password, role } = req.body;
-
-//     // Check if user already exists
-//     let existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return res.status(400).json({ message: "User already exists" });
-//     }
-
-//     // Hash password before storing
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     // Create a new user in the generic User model
-//     const newUser = new User({ name, email, password: hashedPassword, role });
-//     await newUser.save();
-
-//     // Store the user in the specific model based on role
-//     if (role === "student") {
-//       const student = new Student({ userId: newUser._id, name, email });
-//       await student.save();
-//     } else if (role === "faculty") {
-//       const faculty = new Faculty({ userId: newUser._id, name, email });
-//       await faculty.save();
-//     } else if (role === "admin") {
-//       const admin = new Admin({ userId: newUser._id, name, email });
-//       await admin.save();
-//     }
-
-//     // Generate JWT Token
-//     const token = jwt.sign({ id: newUser._id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-//     res.status(201).json({ message: "User registered successfully", token });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error", error: error.message });
-//   }
-// };
-
+//register
 export const register = async (req, res) => {
-    try {
-      const { name, email, password, role, department } = req.body;
-  
-      // Ensure department is provided if user is a student
-      if (role.toLowerCase() === "student" && !department) {
-        return res.status(400).json({ message: "Department is required for students" });
-      }
-  
-      // Check if user already exists
-      let existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
-      }
-  
-      // Hash password before storing
-      const hashedPassword = await bcrypt.hash(password, 10);
-  
-      // Create a new user in the generic User model
-      const newUser = new User({ name, email, password: hashedPassword, role: role.toLowerCase() });
-      await newUser.save();
-  
-      // Store the user in the specific model based on role
-      if (role.toLowerCase() === "student") {
-        console.log("Creating student entry..."); // Debugging line
-        const student = new Student({ 
-          userId: newUser._id,  // ✅ Link to User model
-          name, 
-          email, 
-          department, // ✅ Include department
-        });
-        await student.save();
-        console.log("Student saved successfully"); // Debugging line
-      } else if (role.toLowerCase() === "faculty") {
-        const faculty = new Faculty({ userId: newUser._id, name, email });
-        await faculty.save();
-      } else if (role.toLowerCase() === "admin") {
-        const admin = new Admin({ userId: newUser._id, name, email });
-        await admin.save();
-      }
-  
-      // Generate JWT Token
-      const token = generateToken(newUser);
-  
-      res.status(201).json({ message: "User registered successfully", token });
-    } catch (error) {
-      console.error("Error in registration:", error); // Debugging line
-      res.status(500).json({ message: "Server error", error: error.message });
+  try {
+    const { name, email, password, role, department } = req.body;
+
+    // Ensure department is provided for student and faculty roles
+    if ((role.toLowerCase() === "student" || role.toLowerCase() === "faculty") && !department) {
+      return res.status(400).json({ message: "Department is required for students and faculty" });
     }
-  };
+
+    // Check if user already exists
+    let existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Hash password before storing
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user in the generic User model
+    const newUser = new User({ name, email, password: hashedPassword, role: role.toLowerCase() });
+    await newUser.save();
+
+    // Store the user in the specific model based on role
+    if (role.toLowerCase() === "student") {
+      console.log("Creating student entry..."); // Debugging line
+      const student = new Student({ 
+        userId: newUser._id,  // Link to User model
+        name, 
+        email, 
+        department, // Include department
+      });
+      await student.save();
+      console.log("Student saved successfully"); // Debugging line
+    } else if (role.toLowerCase() === "faculty") {
+      const faculty = new Faculty({ 
+        userId: newUser._id, 
+        name, 
+        email, 
+        department, // ✅ Include department
+      });
+      await faculty.save();
+    } else if (role.toLowerCase() === "admin") {
+      const admin = new Admin({ 
+        userId: newUser._id, 
+        name, 
+        email, 
+        department: null, // Department is not required for admin
+      });
+      await admin.save();
+    }
+
+    // Generate JWT Token
+    const token = generateToken(newUser);
+
+    res.status(201).json({ message: "User registered successfully", token });
+  } catch (error) {
+    console.error("Error in registration:", error); // Debugging line
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 // LOGIN USER
 export const login = async (req, res) => {
