@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { registerRoute } from '../utils';
 
 const RegisterForm = () => {
   const [name, setName] = useState('');
@@ -10,6 +11,7 @@ const RegisterForm = () => {
   const [department, setDepartment] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +23,7 @@ const RegisterForm = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/register', {
+      const response = await axios.post(registerRoute, {
         name,
         email,
         password,

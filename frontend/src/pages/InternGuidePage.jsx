@@ -64,7 +64,7 @@ const InternGuidePage = () => {
               ))}
 
               <button
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/login')}
                 className="relative inline-flex items-center justify-center px-8 py-3 font-bold overflow-hidden rounded-full group"
               >
                 <span className="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-600 via-purple-700 to-blue-500 group-hover:from-blue-500 group-hover:via-purple-700 group-hover:to-purple-600 transition-all duration-700"></span>
@@ -91,7 +91,7 @@ const InternGuidePage = () => {
                   {item}
                 </a>
               ))}
-              <button onClick={() => navigate('/auth')} className="mt-8 bg-white text-purple-800 px-8 py-3 rounded-full font-bold">
+              <button onClick={() => navigate('/login')} className="mt-8 bg-white text-purple-800 px-8 py-3 rounded-full font-bold">
                 Get Started
               </button>
             </div>
