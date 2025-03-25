@@ -9,7 +9,7 @@ const ManagementSchema = new mongoose.Schema(
     sdgTracking: [
       {
         sdg: { type: String },
-        contribution: { type: Number }, // Percentage of internships aligned
+        contribution: { type: Number },
       },
     ],
   },

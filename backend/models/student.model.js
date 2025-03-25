@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 const StudentSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Link to User model
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, 
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
-    department: { type: String, required: true }, // Ensure department is required
+    department: { type: String, required: true },
     appliedInternships: [
       {
         internship: { type: mongoose.Schema.Types.ObjectId, ref: "Internship" },
@@ -27,18 +27,18 @@ const StudentSchema = new mongoose.Schema(
         rating: { type: Number, min: 1, max: 5 },
       },
     ],
-    skills: [{ type: String }], // New field: Skills
-    interests: [{ type: String }], // New field: Interests
-    cgpa: { type: Number, min: 0, max: 10 }, // New field: CGPA
-    resume: { type: String }, // New field: Resume URL
+    skills: [{ type: String }], 
+    interests: [{ type: String }], 
+    cgpa: { type: Number, min: 0, max: 10 }, 
+    resume: { type: String }, 
     achievements: [{ type: String }], 
     phoneNumber: { type: String },
-    linkedinProfile: { type: String }, // New field: LinkedIn profile
+    linkedinProfile: { type: String }, 
     portfolioWebsite: { type: String },
     certifications: [{ type: String }], 
-    availability: { type: String, enum: ["Part-time", "Full-time", "Internship"] }, // New field: Availability
-    preferredRoles: [{ type: String }], // New field: Job roles student is interested in
-    locationPreference: { type: String }, // New field: Remote, Hybrid, or Preferred cities
+    availability: { type: String, enum: ["Part-time", "Full-time", "Internship"] }, 
+    preferredRoles: [{ type: String }], 
+    locationPreference: { type: String }, 
     references: [{ type: String }],
   },
   { timestamps: true }
