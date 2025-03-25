@@ -4,7 +4,8 @@ import bodyParser from 'body-parser';
 import dotenv from "dotenv";
 import cors from "cors";
 import authRoutes from "./routes/auth.route.js";
-import protectedRoutes from "./routes/auth.route.js";
+import studentRoutes from "./routes/student.route.js";
+import internshipRoutes from "./routes/internship.routes.js";
 
 dotenv.config();
 
@@ -18,13 +19,15 @@ app.use(cors());
 mongoose.connect(process.env.MONGODB_URL);
 
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => {
     console.log('Connected to MongoDB');
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/dashboard", protectedRoutes);
+app.use("/api/student", studentRoutes);
+app.use("/api/internships", internshipRoutes);
+
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

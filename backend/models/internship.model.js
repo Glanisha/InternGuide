@@ -7,10 +7,17 @@ const InternshipSchema = new mongoose.Schema(
     description: { type: String, required: true },
     requirements: [{ type: String }],
     department: { type: String, required: true },
-    sdgGoals: [{ type: String }], // Sustainable Development Goals
-    programOutcomes: [{ type: String }], // PO mapping
-    educationalObjectives: [{ type: String }], // PEO mapping
+    sdgGoals: [{ type: String }], 
+    programOutcomes: [{ type: String }],
+    educationalObjectives: [{ type: String }], 
     applicants: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
+    status: {
+      type: String,
+      enum: ["Open", "Closed"],
+      default: "Open",
+    }, 
+    applicationDeadline: { type: Date }, 
+    internshipDuration: { type: String },
   },
   { timestamps: true }
 );

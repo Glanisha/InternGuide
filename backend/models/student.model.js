@@ -27,6 +27,19 @@ const StudentSchema = new mongoose.Schema(
         rating: { type: Number, min: 1, max: 5 },
       },
     ],
+    skills: [{ type: String }], // New field: Skills
+    interests: [{ type: String }], // New field: Interests
+    cgpa: { type: Number, min: 0, max: 10 }, // New field: CGPA
+    resume: { type: String }, // New field: Resume URL
+    achievements: [{ type: String }], 
+    phoneNumber: { type: String },
+    linkedinProfile: { type: String }, // New field: LinkedIn profile
+    portfolioWebsite: { type: String },
+    certifications: [{ type: String }], 
+    availability: { type: String, enum: ["Part-time", "Full-time", "Internship"] }, // New field: Availability
+    preferredRoles: [{ type: String }], // New field: Job roles student is interested in
+    locationPreference: { type: String }, // New field: Remote, Hybrid, or Preferred cities
+    references: [{ type: String }],
   },
   { timestamps: true }
 );
