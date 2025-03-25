@@ -34,3 +34,13 @@ export const createInternship = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
+export const getAllInternships = async (req, res) => {
+    try {
+      const internships = await Internship.find();
+      res.status(200).json(internships);
+    } catch (error) {
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };

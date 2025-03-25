@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { studentProfileUpdate } from "../../utils";
+import Student from "../../../../backend/models/student.model";
 
 const UpdateProfile = () => {
   const [formData, setFormData] = useState({
@@ -56,7 +58,7 @@ const UpdateProfile = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await axios.put("http://localhost:8000/api/student/update", formData, {
+      await axios.put(studentProfileUpdate, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
