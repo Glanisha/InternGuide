@@ -6,7 +6,7 @@ import InternGuidePage from "./pages/InternGuidePage";
 import ProtectedRoute from './components/ProtectedRoute';
 import UpdateProfile from './components/Student/UpdateProfile';
 import AllInternships from './components/Student/AllInternships';
-import Sidebar from './pages/Student/Sdashboard';
+import Sdashboard from './pages/Student/Sdashboard';
 
 const App = () => {
   return (
@@ -17,9 +17,10 @@ const App = () => {
         <Route path="/register" element={<RegisterForm />} />
 
         <Route element={<ProtectedRoute />}>
-        <Route path="/student-dashboard" element={<Sidebar/>} />
-        <Route path="/updateform" element={<UpdateProfile/>} />
-        <Route path="/internships" element={<AllInternships/>} />
+        <Route path="/student-dashboard" element={<Sdashboard />}>
+        <Route path="updateform" element={<UpdateProfile/>} />
+        <Route path="internships" element={<AllInternships/>} />
+        </Route>
         </Route>
 
         <Route element={<ProtectedRoute />}>

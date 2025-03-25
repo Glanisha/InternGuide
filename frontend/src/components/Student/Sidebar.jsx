@@ -7,17 +7,51 @@ import {
   FiMenu,
   FiX
 } from 'react-icons/fi';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
-  const [activeTab, setActiveTab] = useState('Profile');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
+  // Determine active tab based on current route
+  const getActiveTab = () => {
+    if (location.pathname.includes('updateform')) return 'Profile';
+    if (location.pathname.includes('internships')) return 'Internships';
+    // Add more routes as needed
+    return 'Profile'; // default
+  };
+
+  const [activeTab, setActiveTab] = useState(getActiveTab());
+
   const menuItems = [
-    { name: 'Profile', icon: <FiUser size={20} /> },
-    { name: 'Internships', icon: <FiBriefcase size={20} /> },
-    { name: 'Mentor', icon: <FiUsers size={20} /> },
-    { name: 'Tasks', icon: <FiCheckSquare size={20} /> }
+    { 
+      name: 'Profile', 
+      icon: <FiUser size={20} />,
+      path: 'updateform' 
+    },
+    { 
+      name: 'Internships', 
+      icon: <FiBriefcase size={20} />,
+      path: 'internships' 
+    },
+    // { 
+    //   name: 'Mentor', 
+    //   icon: <FiUsers size={20} />,
+    //   path: 'mentor' 
+    // },
+    // { 
+    //   name: 'Tasks', 
+    //   icon: <FiCheckSquare size={20} />,
+    //   path: 'tasks' 
+    // }
   ];
+
+  const handleNavigation = (path, name) => {
+    setActiveTab(name);
+    setIsOpen(false);
+    navigate(`/student-dashboard/${path}`);
+  };
 
   return (
     <>
@@ -60,10 +94,7 @@ const Sidebar = () => {
                     : 'hover:bg-[#292E33] text-gray-300'
                   }
                 `}
-                onClick={() => {
-                  setActiveTab(item.name);
-                  setIsOpen(false);
-                }}
+                onClick={() => handleNavigation(item.path, item.name)}
               >
                 <span className="mr-4">{item.icon}</span>
                 <span>{item.name}</span>
