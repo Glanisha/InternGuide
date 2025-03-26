@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const AdminSchema = new mongoose.Schema(
   {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, 
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     role: { type: String, enum: ["Moderator", "SuperAdmin"], default: "Moderator" },

@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
 
 const ManagementSchema = new mongoose.Schema(
-  {
+  {userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, 
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
-    institution: { type: String, required: true },
     reportsGenerated: [{ type: String }],
     sdgTracking: [
       {

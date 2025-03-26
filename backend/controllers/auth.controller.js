@@ -5,6 +5,9 @@ import dotenv from "dotenv";
 import Student from "../models/student.model.js";
 import Faculty from "../models/faculty.model.js";
 import Admin from "../models/admin.model.js";
+import Management from "../models/management.model.js";
+import Viewer from "../models/viewer.model.js";
+
 
 dotenv.config();
 
@@ -34,31 +37,20 @@ export const register = async (req, res) => {
     await newUser.save();
 
     if (role.toLowerCase() === "student") {
-      console.log("Creating student entry...");
-      const student = new Student({ 
-        userId: newUser._id, 
-        name, 
-        email, 
-        department,
-      });
+      const student = new Student({ userId: newUser._id, name, email, department });
       await student.save();
-      console.log("Student saved successfully"); 
     } else if (role.toLowerCase() === "faculty") {
-      const faculty = new Faculty({ 
-        userId: newUser._id, 
-        name, 
-        email, 
-        department,
-      });
+      const faculty = new Faculty({ userId: newUser._id, name, email, department });
       await faculty.save();
     } else if (role.toLowerCase() === "admin") {
-      const admin = new Admin({ 
-        userId: newUser._id, 
-        name, 
-        email, 
-        department: null, 
-      });
+      const admin = new Admin({ userId: newUser._id, name, email, department: null });
       await admin.save();
+    } else if (role.toLowerCase() === "management") {
+      const management = new Management({ userId: newUser._id, name, email });
+      await management.save();
+    } else if (role.toLowerCase() === "viewer") {
+      const viewer = new Viewer({ userId: newUser._id, name, email });
+      await viewer.save();
     }
 
     const token = generateToken(newUser);
@@ -70,7 +62,8 @@ export const register = async (req, res) => {
   }
 };
 
-// LOGIN USER
+
+//login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;

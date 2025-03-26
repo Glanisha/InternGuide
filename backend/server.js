@@ -3,8 +3,9 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import dotenv from "dotenv";
 import cors from "cors";
-import authRoutes from "./routes/auth.route.js";
-import studentRoutes from "./routes/student.route.js";
+import authRoutes from "./routes/auth.routes.js";
+import studentRoutes from "./routes/student.routes.js";
+import facultyRoutes from "./routes/faculty.routes.js";
 import internshipRoutes from "./routes/internship.routes.js";
 
 dotenv.config();
@@ -27,6 +28,7 @@ db.once('open', () => {
 app.use("/api/auth", authRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/internships", internshipRoutes);
+app.use("/api/faculty", facultyRoutes);
 
 
 app.listen(port, () => {
