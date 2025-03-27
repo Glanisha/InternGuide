@@ -4,7 +4,7 @@ const ViewerSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
-    interests: [{ type: String }], // Areas of interest (e.g., AI, Finance)
+    interests: [{ type: String }], 
     savedInternships: [{ type: mongoose.Schema.Types.ObjectId, ref: "Internship" }],
   },
   { timestamps: true }
