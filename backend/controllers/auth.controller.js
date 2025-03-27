@@ -8,7 +8,6 @@ import Admin from "../models/admin.model.js";
 import Management from "../models/management.model.js";
 import Viewer from "../models/viewer.model.js";
 
-
 dotenv.config();
 
 const generateToken = (user) => {
@@ -22,8 +21,13 @@ export const register = async (req, res) => {
   try {
     const { name, email, password, role, department } = req.body;
 
-    if ((role.toLowerCase() === "student" || role.toLowerCase() === "faculty") && !department) {
-      return res.status(400).json({ message: "Department is required for students and faculty" });
+    if (
+      (role.toLowerCase() === "student" || role.toLowerCase() === "faculty") &&
+      !department
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Department is required for students and faculty" });
     }
 
     let existingUser = await User.findOne({ email });
@@ -33,17 +37,37 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({ name, email, password: hashedPassword, role: role.toLowerCase() });
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: role.toLowerCase(),
+    });
     await newUser.save();
 
     if (role.toLowerCase() === "student") {
-      const student = new Student({ userId: newUser._id, name, email, department });
+      const student = new Student({
+        userId: newUser._id,
+        name,
+        email,
+        department,
+      });
       await student.save();
     } else if (role.toLowerCase() === "faculty") {
-      const faculty = new Faculty({ userId: newUser._id, name, email, department });
+      const faculty = new Faculty({
+        userId: newUser._id,
+        name,
+        email,
+        department,
+      });
       await faculty.save();
     } else if (role.toLowerCase() === "admin") {
-      const admin = new Admin({ userId: newUser._id, name, email, department: null });
+      const admin = new Admin({
+        userId: newUser._id,
+        name,
+        email,
+        department: null,
+      });
       await admin.save();
     } else if (role.toLowerCase() === "management") {
       const management = new Management({ userId: newUser._id, name, email });
@@ -62,7 +86,6 @@ export const register = async (req, res) => {
   }
 };
 
-
 //login
 export const login = async (req, res) => {
   try {
@@ -72,7 +95,9 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Email and password required" });
     }
 
+    console.log("Searching for email:", email);
     const user = await User.findOne({ email });
+    console.log("User found:", user);
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
@@ -82,8 +107,48 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    let userData;
+    switch (user.role.toLowerCase()) {
+      case "student":
+        userData = await Student.findOne({ userId: user._id }).select(
+          "-_id department"
+        );
+        break;
+      case "faculty":
+        userData = await Faculty.findOne({ userId: user._id }).select(
+          "-_id department"
+        );
+        break;
+      case "admin":
+        userData = await Admin.findOne({ userId: user._id }).select("-_id");
+        break;
+      case "management":
+        userData = await Management.findOne({ userId: user._id }).select(
+          "-_id reportsGenerated sdgTracking"
+        );
+        break;
+      case "viewer":
+        userData = await Viewer.findOne({ userId: user._id }).select("-_id");
+        break;
+      default:
+        return res.status(400).json({ message: "Invalid role" });
+    }
+
+    if (!userData) {
+      return res
+        .status(400)
+        .json({
+          message: "Role-specific data not found. Please contact admin.",
+        });
+    }
+
     const token = generateToken(user);
-    res.status(200).json({ message: "Login successful", token, role: user.role });
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      role: user.role,
+      userData,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
