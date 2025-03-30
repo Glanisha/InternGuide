@@ -9,8 +9,9 @@ import authRoutes from "./routes/auth.routes.js";
 import studentRoutes from "./routes/student.routes.js";
 import facultyRoutes from "./routes/faculty.routes.js";
 import internshipRoutes from "./routes/internship.routes.js";
-import { socketAuth } from "./middlewares/auth.middleware.js"; // Import the modified middleware
-import Chat from "./models/chat.model.js"; // Import Chat model
+import { socketAuth } from "./middlewares/auth.middleware.js";
+import Chat from "./models/chat.model.js";
+import Student from "./models/student.model.js";
 
 dotenv.config();
 
@@ -19,7 +20,10 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173", 
+  credentials: true,
+}));
 
 mongoose.connect(process.env.MONGODB_URL);
 
@@ -35,42 +39,74 @@ const server = createServer(app);
 // Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: "*", 
-    methods: ["GET", "POST"]
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+    credentials: true,
   }
 });
+
+io.use(socketAuth);
 
 // Apply Socket.io authentication middleware
 io.use(socketAuth);
 
-// Socket.io chat logic for Student-Mentor communication
-io.on("connection", (socket) => {
-  console.log(`⚡ A user connected: ${socket.user.id}`);
+// Socket.io chat logic
+io.on("connection", async (socket) => {
+  console.log(`⚡ User connected: ${socket.user.id}`);
 
-  socket.on("sendMessage", async ({ receiverId, message }) => {
-    try {
-      const chatMessage = new Chat({
-        senderId: socket.user.id, 
-        receiverId, 
-        message
-      });
-      await chatMessage.save();
+  try {
+    // Fetch the student's assigned mentor
+    const student = await Student.findOne({ userId: socket.user.id }).populate("assignedMentor");
 
-      // Emit message to the receiver
-      io.to(receiverId).emit("receiveMessage", {
-        senderId: socket.user.id,
-        message
-      });
-
-      console.log(`📩 Message from ${socket.user.id} to ${receiverId}: ${message}`);
-    } catch (error) {
-      console.error("❌ Error saving chat message:", error);
+    if (!student || !student.assignedMentor) {
+      console.log("❌ No mentor assigned to this student.");
+      return socket.disconnect();
     }
-  });
 
-  socket.on("disconnect", () => {
-    console.log(`❌ User disconnected: ${socket.user.id}`);
-  });
+    const mentorId = student.assignedMentor._id.toString();
+    const studentId = socket.user.id.toString();
+
+    // Create a unique room for student-mentor chat
+    const room = `chat_${studentId}_${mentorId}`;
+    socket.join(room);
+    console.log(`✅ User ${studentId} joined room: ${room}`);
+
+    // Fetch previous chat history and send to student
+    const messages = await Chat.find({
+      $or: [
+        { senderId: studentId, receiverId: mentorId },
+        { senderId: mentorId, receiverId: studentId }
+      ]
+    }).sort({ createdAt: 1 });
+
+    socket.emit("previousMessages", messages);
+
+    // Listen for new messages
+    socket.on("sendMessage", async ({ message }) => {
+      try {
+        const chatMessage = new Chat({
+          senderId: studentId,
+          receiverId: mentorId,
+          message
+        });
+        await chatMessage.save();
+
+        // Emit message to both student and mentor in the room
+        io.to(room).emit("receiveMessage", chatMessage);
+        console.log(`📩 Message from ${studentId} to ${mentorId}: ${message}`);
+      } catch (error) {
+        console.error("❌ Error saving chat message:", error);
+      }
+    });
+
+    // Handle disconnection
+    socket.on("disconnect", () => {
+      console.log(`❌ User disconnected: ${socket.user.id}`);
+    });
+  } catch (error) {
+    console.error("❌ Error handling chat connection:", error);
+    socket.disconnect();
+  }
 });
 
 // API Routes

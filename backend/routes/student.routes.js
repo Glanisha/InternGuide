@@ -7,10 +7,11 @@ import {
   trackProgress,
   getFeedback,
   generateReport,
-  updateStudentProfile
+  updateStudentProfile,
+  sendMessage,
+  getChatHistory
 } from "../controllers/student.controller.js";
 import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
-import { protect } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -21,8 +22,8 @@ router.get("/mentor", getMentor);
 router.get("/progress", trackProgress);
 router.get("/feedback", getFeedback);
 router.get("/report", generateReport);
-router.put("/update", protect, updateStudentProfile); 
-router.post("/sendMessage", protect, sendMessage);
-router.get("/chat/:mentorId", protect, getChatHistory);
+router.put("/update", updateStudentProfile);
+router.post("/sendMessage", sendMessage);
+router.get("/chat", getChatHistory); // Fetch chat history with assigned mentor
 
 export default router;
