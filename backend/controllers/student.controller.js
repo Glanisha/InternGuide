@@ -1,5 +1,6 @@
 import Internship from "../models/internship.model.js";
 import Student from "../models/student.model.js";
+import Chat from "../models/chat.model.js";
 
 export const getInternships = async (req, res) => {
   try {
@@ -97,6 +98,48 @@ export const updateStudentProfile = async (req, res) => {
   } catch (error) {
       console.error("❌ Error updating student profile:", error);
       res.status(500).json({ message: "Server error", error });
+  }
+};
+
+export const sendMessage = async (req, res) => {
+  try {
+    const { message } = req.body;
+    const student = await Student.findOne({ userId: req.user._id }).populate("assignedMentor");
+
+    if (!student || !student.assignedMentor) {
+      return res.status(400).json({ message: "No assigned mentor found" });
+    }
+
+    const mentorId = student.assignedMentor._id;
+    const chatMessage = new Chat({ senderId: req.user._id, receiverId: mentorId, message });
+
+    await chatMessage.save();
+    res.status(200).json({ message: "Message sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error sending message", error });
+  }
+};
+
+export const getChatHistory = async (req, res) => {
+  try {
+    const student = await Student.findOne({ userId: req.user._id }).populate("assignedMentor");
+    if (!student || !student.assignedMentor) {
+      return res.status(400).json({ message: "No assigned mentor found" });
+    }
+
+    const mentorId = student.assignedMentor._id;
+    const studentId = req.user._id;
+
+    const chatHistory = await Chat.find({
+      $or: [
+        { senderId: studentId, receiverId: mentorId },
+        { senderId: mentorId, receiverId: studentId }
+      ]
+    }).sort("timestamp");
+
+    res.status(200).json(chatHistory);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching chat history", error });
   }
 };
 
