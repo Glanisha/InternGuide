@@ -9,9 +9,8 @@ import {
   generateReport,
   updateStudentProfile,
   sendMessage,
-  getChatHistory
+  getChatHistory,
   findBestInternship,
-  updateStudentProfile
 } from "../controllers/student.controller.js";
 import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
 
