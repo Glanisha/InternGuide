@@ -34,7 +34,7 @@ const InternGuidePage = () => {
                   <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-500 group-hover:w-full transition-all duration-300"></span>
                 </a>
               ))}
-
+{/* take note of this */}
               <button
                 onClick={() => navigate('/login')}
                 className="relative inline-flex items-center justify-center px-8 py-3 font-bold overflow-hidden rounded-full group"

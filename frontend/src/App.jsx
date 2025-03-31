@@ -7,6 +7,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import UpdateProfile from './components/Student/UpdateProfile';
 import AllInternships from './components/Student/AllInternships';
 import Sdashboard from './pages/Student/Sdashboard';
+import Internship from './pages/Student/Internship';
+
 
 const App = () => {
   return (
@@ -19,15 +21,18 @@ const App = () => {
         <Route element={<ProtectedRoute />}>
         <Route path="/student-dashboard" element={<Sdashboard />}>
         <Route path="updateform" element={<UpdateProfile/>} />
-        <Route path="internships" element={<AllInternships/>} />
+        <Route path="internships" element={<Internship/>} />
         </Route>
         </Route>
 
         <Route element={<ProtectedRoute />}>
         <Route path="/faculty-dashboard" element={<h1>Faculty dashboard</h1> } />
+    
+        </Route>
+
+
         <Route path="/admin-dashboard" element={<h1>Admin Dashboard</h1>} />
         <Route path="/management-dashboard" element={<h1> Managemnt dashboard</h1>} />
-        </Route>
         
         <Route path="/" element={<InternGuidePage />} />
       </Routes>

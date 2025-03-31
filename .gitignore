@@ -1,0 +1,57 @@
+# Node.js (Backend)
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.env
+dist/
+build/
+coverage/
+.vscode/
+.DS_Store
+.idea/
+*.log
+
+# React (Frontend)
+client/node_modules/
+client/.env
+client/build/
+client/dist/
+client/.cache/
+client/coverage/
+client/public/
+
+# Python (Django or Flask Backend)
+server/__pycache__/
+server/db.sqlite3
+server/.env
+server/.venv/
+server/venv/
+server/*.pyc
+server/*.pyo
+server/.mypy_cache/
+server/.pytest_cache/
+server/.cache/
+server/media/
+server/staticfiles/
+server/logs/
+server/tmp/
+
+# Ignore local environment & dependency management
+.env
+.venv/
+venv/
+Pipfile
+Pipfile.lock
+*.sqlite3
+*.pyc
+*.pyo
+
+# Logs & Debugging
+logs/
+*.log
+nohup.out
+
+# System-specific files
+.DS_Store
+Thumbs.db

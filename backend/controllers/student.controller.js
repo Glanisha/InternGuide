@@ -99,3 +99,34 @@ export const updateStudentProfile = async (req, res) => {
       res.status(500).json({ message: "Server error", error });
   }
 };
+
+export const findBestInternship = async (req, res) => {
+  try {
+    console.log("User from request:", req.user); 
+
+    const studentId = req.user?.id;
+    if (!studentId) return res.status(400).json({ error: "User ID missing in request" });
+
+    const student = await Student.findOne({ userId: studentId });
+    console.log("Student found:", student); 
+
+    if (!student) return res.status(404).json({ error: "Student not found" });
+
+    const bestInternships = await Internship.find({
+      status: "Open",
+      $or: [
+        { skillsRequired: { $in: student.skills } }, 
+        { role: { $regex: new RegExp(student.preferredRoles.join("|"), "i") } }, 
+        { location: student.locationPreference || { $exists: true } }, 
+        { mode: { $in: [student.availability, "Remote"] } }, 
+      ],
+    })
+      .sort({ applicationDeadline: 1 }) 
+      .limit(10);
+
+    return res.status(200).json(bestInternships);
+  } catch (error) {
+    console.error("Error finding best internship:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
