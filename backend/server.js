@@ -15,7 +15,6 @@ import Student from "./models/student.model.js";
 import adminRoutes from "./routes/admin.routes.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
-import applicationRoutes from './routes/application.routes.js';
 import multer from 'multer';
 
 dotenv.config();
@@ -125,7 +124,7 @@ app.use("/api/student", studentRoutes);
 app.use("/api/internships", internshipRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/admin", adminRoutes);
-app.use('/api/applications', applicationRoutes);
+
 
 // Start the server
 server.listen(port, () => {

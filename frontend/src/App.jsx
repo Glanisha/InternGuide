@@ -8,6 +8,7 @@ import UpdateProfile from './components/Student/UpdateProfile';
 import AllInternships from './components/Student/AllInternships';
 import Sdashboard from './pages/Student/Sdashboard';
 import Internship from './pages/Student/Internship';
+import AdminDashboard from './components/Admin/Admin';
 
 
 const App = () => {
@@ -31,7 +32,7 @@ const App = () => {
         </Route>
 
 
-        <Route path="/admin-dashboard" element={<h1>Admin Dashboard</h1>} />
+        <Route path="/admin-dashboard" element={<AdminDashboard/>} />
         <Route path="/management-dashboard" element={<h1> Managemnt dashboard</h1>} />
         
         <Route path="/" element={<InternGuidePage />} />
