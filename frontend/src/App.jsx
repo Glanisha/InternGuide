@@ -9,6 +9,7 @@ import AllInternships from './components/Student/AllInternships';
 import Sdashboard from './pages/Student/Sdashboard';
 import Internship from './pages/Student/Internship';
 import AdminDashboard from './components/Admin/Admin';
+import LandingPage from './pages/InternGuidePage';
 
 
 const App = () => {
@@ -35,7 +36,7 @@ const App = () => {
         <Route path="/admin-dashboard" element={<AdminDashboard/>} />
         <Route path="/management-dashboard" element={<h1> Managemnt dashboard</h1>} />
         
-        <Route path="/" element={<InternGuidePage />} />
+        <Route path="/" element={<LandingPage />} />
       </Routes>
     </Router>
   );

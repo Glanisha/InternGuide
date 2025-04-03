@@ -88,15 +88,15 @@ export const updateStudentProfile = async (req, res) => {
       const student = await Student.findOne({ userId });
 
       if (!student) {
-          console.log("❌ No student found with this userId");
+          console.log("No student found with this userId");
           return res.status(404).json({ message: "Student profile not found" });
       }
       Object.assign(student, req.body);
       await student.save();
-      console.log("✅ Student profile updated successfully");
+      console.log("Student profile updated successfully");
       res.status(200).json({ message: "Profile updated", student });
   } catch (error) {
-      console.error("❌ Error updating student profile:", error);
+      console.error("Error updating student profile:", error);
       res.status(500).json({ message: "Server error", error });
   }
 };

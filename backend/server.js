@@ -68,7 +68,7 @@ io.on("connection", async (socket) => {
     const student = await Student.findOne({ userId: socket.user.id }).populate("assignedMentor");
 
     if (!student || !student.assignedMentor) {
-      console.log("❌ No mentor assigned to this student.");
+      console.log("No mentor assigned to this student.");
       return socket.disconnect();
     }
 
@@ -78,7 +78,7 @@ io.on("connection", async (socket) => {
     // Create a unique room for student-mentor chat
     const room = `chat_${studentId}_${mentorId}`;
     socket.join(room);
-    console.log(`✅ User ${studentId} joined room: ${room}`);
+    console.log(`User ${studentId} joined room: ${room}`);
 
     // Fetch previous chat history and send to student
     const messages = await Chat.find({
@@ -102,18 +102,18 @@ io.on("connection", async (socket) => {
 
         // Emit message to both student and mentor in the room
         io.to(room).emit("receiveMessage", chatMessage);
-        console.log(`📩 Message from ${studentId} to ${mentorId}: ${message}`);
+        console.log(`Message from ${studentId} to ${mentorId}: ${message}`);
       } catch (error) {
-        console.error("❌ Error saving chat message:", error);
+        console.error("Error saving chat message:", error);
       }
     });
 
     // Handle disconnection
     socket.on("disconnect", () => {
-      console.log(`❌ User disconnected: ${socket.user.id}`);
+      console.log(`User disconnected: ${socket.user.id}`);
     });
   } catch (error) {
-    console.error("❌ Error handling chat connection:", error);
+    console.error("Error handling chat connection:", error);
     socket.disconnect();
   }
 });
@@ -128,5 +128,5 @@ app.use("/api/admin", adminRoutes);
 
 // Start the server
 server.listen(port, () => {
-    console.log(`🚀 Server is running on http://localhost:${port}`);
+    console.log(`Server is running on http://localhost:${port}`);
 });
