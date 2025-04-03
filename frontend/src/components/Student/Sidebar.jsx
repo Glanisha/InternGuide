@@ -22,100 +22,44 @@ const Sidebar = () => {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (isChatOpen) {
-      const newSocket = io("http://localhost:8000", {
-        withCredentials: true,
-        auth: { token: localStorage.getItem("token") },
-      });
-  
-      setSocket(newSocket);
-  
-      newSocket.on("connect", () => {
-        setIsConnected(true);
-        console.log("Connected to chat server");
-  
-        const studentId = localStorage.getItem("userId");
-        const mentorId = localStorage.getItem("mentorId");
-  
-        if (studentId && mentorId) {
-          const roomId = `${studentId}_${mentorId}`;
-          newSocket.emit("joinRoom", { studentId, mentorId });
-          console.log("Joined room:", roomId);
-        }
-  
-        fetchMessages();
-      });
-  
-      newSocket.on("disconnect", () => {
-        setIsConnected(false);
-        console.log("Disconnected from chat server");
-      });
-  
-      newSocket.on("message", (message) => {
-        setMessages((prev) => [...prev, message]);
-      });
-  
-      return () => {
-        newSocket.off("message");
-        newSocket.disconnect();
-      };
-    }
-  }, [isChatOpen]);
+    const newSocket = io("http://localhost:8000", {
+      withCredentials: true,
+      auth: { token: localStorage.getItem("token") },
+    });
+
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      setIsConnected(true);
+      console.log("Connected to chat server");
+    });
+
+    newSocket.on("disconnect", () => {
+      setIsConnected(false);
+      console.log("Disconnected from chat server");
+    });
+
+    newSocket.on("receiveMessage", (message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
   
 
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const handleSendMessage = () => {
+    if (!newMessage.trim() || !socket) return;
 
-  // Fetch message history from API
-  const fetchMessages = async () => {
-    try {
-      const studentId = localStorage.getItem("userId");
-      const mentorId = localStorage.getItem("mentorId");
-  
-      if (!studentId || !mentorId) {
-        console.error("❌ Missing studentId or mentorId");
-        return;
-      }
-  
-      const response = await fetch(
-        `http://localhost:5000/api/messages?studentId=${studentId}&mentorId=${mentorId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      setMessages(data.messages || []);
-    } catch (error) {
-      console.error("❌ Error fetching messages:", error);
-    }
+    const messageData = {
+      receiverId: localStorage.getItem("mentorId"),  // Replace with actual mentor ID
+      message: newMessage
+    };
+
+    socket.emit("sendMessage", messageData);
+    setNewMessage("");
   };
-  
-
-const handleSendMessage = () => {
-  if (!newMessage.trim() || !socket || !isConnected) return;
-
-  const messageData = {
-    text: newMessage,
-    senderId: localStorage.getItem("userId"),
-    receiverId: localStorage.getItem("mentorId"),
-    timestamp: new Date().toISOString(),
-  };
-
-  socket.emit("sendMessage", messageData);
-
-  // Optimistically update UI
-  setMessages((prev) => [...prev, messageData]);
-  setNewMessage("");
-};
 
 
   // Navigation logic
@@ -253,7 +197,7 @@ const handleSendMessage = () => {
                       {message.sender === 'mentor' ? 'Mentor' : 'You'} - {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                     <div className={`p-3 rounded-lg max-w-[70%] ${message.sender === 'student' ? 'bg-[#29CB97] text-white ml-auto' : 'bg-gray-100'}`}>
-                      {message.text}
+                      {message.message}
                     </div>
                   </div>
                 </div>

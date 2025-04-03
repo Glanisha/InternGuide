@@ -16,6 +16,7 @@ import adminRoutes from "./routes/admin.routes.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
+import chatRoutes from "./routes/chat.route.js";
 
 dotenv.config();
 
@@ -31,11 +32,9 @@ app.use(cors({
   origin: "http://localhost:5173", 
   credentials: true,
 }));
-app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 mongoose.connect(process.env.MONGODB_URL);
-
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => {
@@ -44,8 +43,6 @@ db.once('open', () => {
 
 // Create HTTP server for Express and Socket.io
 const server = createServer(app);
-
-// Initialize Socket.io
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
@@ -56,31 +53,29 @@ const io = new Server(server, {
 
 io.use(socketAuth);
 
-// Apply Socket.io authentication middleware
-io.use(socketAuth);
-
-// Socket.io chat logic
 io.on("connection", async (socket) => {
   console.log(`⚡ User connected: ${socket.user.id}`);
 
   try {
-    // Fetch the student's assigned mentor
     const student = await Student.findOne({ userId: socket.user.id }).populate("assignedMentor");
 
     if (!student || !student.assignedMentor) {
-      console.log("No mentor assigned to this student.");
+      console.log(`❌ No mentor assigned for Student ID: ${socket.user.id}`);
       return socket.disconnect();
     }
 
     const mentorId = student.assignedMentor._id.toString();
     const studentId = socket.user.id.toString();
 
-    // Create a unique room for student-mentor chat
+    // Log connection details
+    console.log(`👥 Student ID: ${studentId} is now connected with Mentor ID: ${mentorId}`);
+
+    // Create a unique chat room for student and mentor
     const room = `chat_${studentId}_${mentorId}`;
     socket.join(room);
     console.log(`User ${studentId} joined room: ${room}`);
 
-    // Fetch previous chat history and send to student
+    // Fetch and send previous chat history
     const messages = await Chat.find({
       $or: [
         { senderId: studentId, receiverId: mentorId },
@@ -102,15 +97,14 @@ io.on("connection", async (socket) => {
 
         // Emit message to both student and mentor in the room
         io.to(room).emit("receiveMessage", chatMessage);
-        console.log(`Message from ${studentId} to ${mentorId}: ${message}`);
+        console.log(`📩 Message from Student (${studentId}) to Mentor (${mentorId}): ${message}`);
       } catch (error) {
         console.error("Error saving chat message:", error);
       }
     });
 
-    // Handle disconnection
     socket.on("disconnect", () => {
-      console.log(`User disconnected: ${socket.user.id}`);
+      console.log(`❌ Student ID: ${studentId} disconnected.`);
     });
   } catch (error) {
     console.error("Error handling chat connection:", error);
@@ -124,7 +118,6 @@ app.use("/api/student", studentRoutes);
 app.use("/api/internships", internshipRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/admin", adminRoutes);
-
 
 // Start the server
 server.listen(port, () => {
