@@ -10,6 +10,7 @@ import Sdashboard from './pages/Student/Sdashboard';
 import Internship from './pages/Student/Internship';
 import AdminDashboard from './components/Admin/Admin';
 import LandingPage from './pages/InternGuidePage';
+import FacultyDashboard from './components/Faculty/FacultyDashboard';
 
 
 const App = () => {
@@ -28,7 +29,7 @@ const App = () => {
         </Route>
 
         <Route element={<ProtectedRoute />}>
-        <Route path="/faculty-dashboard" element={<h1>Faculty dashboard</h1> } />
+        <Route path="/faculty-dashboard" element={<FacultyDashboard/> } />
     
         </Route>
 
