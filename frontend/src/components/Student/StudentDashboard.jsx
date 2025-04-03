@@ -1,26 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Outlet } from 'react-router-dom';
+import { FiMenu, FiX, FiUser, FiHome, FiCalendar, FiMessageSquare, FiSettings, FiBook, FiAward, FiBriefcase } from 'react-icons/fi';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { FiMenu, FiX, FiHome, FiBriefcase, FiUser, FiSettings, FiChevronDown, FiCalendar, FiArrowLeft } from 'react-icons/fi';
-
-// API routes
-const getAllInternshipsRoute = '/api/internships';
-const studentProfileUpdate = '/api/student/profile';
+import { getAllInternshipsRoute, studentProfileUpdate } from '../../utils';
 
 const StudentDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState('dashboard');
-  const [internships, setInternships] = useState([]); // Initialize as empty array
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [selectedInternship, setSelectedInternship] = useState(null);
-  const [applicationData, setApplicationData] = useState({
-    coverLetter: "",
-    answers: [],
-  });
-  const [resume, setResume] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [profileData, setProfileData] = useState({
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [internships, setInternships] = useState([]);
+  const [recommendedInternships, setRecommendedInternships] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [showRecommended, setShowRecommended] = useState(false);
+  const [formData, setFormData] = useState({
     skills: [],
     interests: [],
     cgpa: "",
@@ -35,123 +28,67 @@ const StudentDashboard = () => {
     locationPreference: "",
     references: [],
   });
+
   const navigate = useNavigate();
 
-  // Fetch internships with proper error handling
-  const fetchInternships = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(getAllInternshipsRoute);
-      setInternships(Array.isArray(response.data) ? response.data : []);
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to fetch internships');
-      setInternships([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (currentTab === 'internships' || currentTab === 'dashboard') {
-      fetchInternships();
-    }
-  }, [currentTab]);
-
-  // Fetch profile data
-  useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch internships
+        const internshipsResponse = await axios.get(getAllInternshipsRoute);
+        setInternships(internshipsResponse.data);
+
+        // Fetch recommended internships
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:8000/api/student/me", {
+        const recommendedResponse = await axios.get(
+          "http://localhost:8000/api/student/best-internship",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setRecommendedInternships(recommendedResponse.data);
+
+        // Fetch profile data
+        const profileResponse = await axios.get("http://localhost:8000/api/student/me", {
           headers: { 
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
-        setProfileData(response.data);
+        setFormData(profileResponse.data);
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (currentTab === 'profile') {
-      fetchProfile();
-    }
-  }, [currentTab]);
+    fetchData();
+  }, []);
 
-  const applyForInternship = (internshipId) => {
-    const internship = internships.find(i => i._id === internshipId);
-    if (internship) {
-      setSelectedInternship(internship);
-      setCurrentTab('application');
-    }
-  };
-
-  const handleFileChange = (e) => {
-    setResume(e.target.files[0]);
-  };
-
-  const handleApplicationInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setApplicationData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setProfileData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleProfileArrayChange = (e, field) => {
-    setProfileData(prev => ({
+  const handleArrayChange = (e, field) => {
+    setFormData((prev) => ({
       ...prev,
       [field]: e.target.value.split(",").map((item) => item.trim()),
     }));
   };
 
-  const handleApplicationSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    
-    if (!resume) {
-      setError("Please upload your resume");
-      return;
-    }
-  
-    setIsSubmitting(true);
-    
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("resume", resume);
-      formDataToSend.append("coverLetter", applicationData.coverLetter);
-      formDataToSend.append("answers", JSON.stringify(applicationData.answers));
-  
-      const token = localStorage.getItem("token");
-      await axios.post(
-        `http://localhost:8000/api/student/apply/${selectedInternship._id}`,
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            "Authorization": `Bearer ${token}`
-          }
-        }
-      );
-  
-      alert("Application submitted successfully!");
-      setCurrentTab('internships');
-    } catch (err) {
-      console.error("Application error:", err);
-      setError(err.response?.data?.message || "Failed to submit application");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleProfileSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await axios.put(studentProfileUpdate, profileData, {
+      await axios.put(studentProfileUpdate, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -164,52 +101,33 @@ const StudentDashboard = () => {
     }
   };
 
-  const renderInternshipCard = (internship) => (
-    <div 
-      key={internship._id} 
-      className="bg-neutral-900/70 rounded-xl p-4 border border-white/10 hover:border-blue-500/30 transition-all"
-    >
-      <div className="flex items-start mb-3">
-        <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mr-3">
-          {internship.company?.charAt(0) || '?'}
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold text-white">{internship.company || 'Unknown Company'}</h2>
-          <h3 className="text-md font-medium text-neutral-300">{internship.title || 'Internship Position'}</h3>
-        </div>
-      </div>
-      
-      <div className="flex flex-wrap gap-2 my-3">
-        {internship.mode && (
-          <span className="px-2 py-1 bg-neutral-800 text-neutral-200 text-sm rounded">
-            {internship.mode}
-          </span>
-        )}
-        {internship.department && (
-          <span className="px-2 py-1 bg-neutral-800 text-neutral-200 text-sm rounded">
-            {internship.department}
-          </span>
-        )}
-        {internship.internshipDuration && (
-          <span className="px-2 py-1 bg-neutral-800 text-neutral-200 text-sm rounded">
-            {internship.internshipDuration}
-          </span>
-        )}
-      </div>
+  const applyForInternship = (internshipId) => {
+    console.log("Applying for internship:", internshipId);
+    // Implement your apply functionality here
+  };
 
-      <div className="flex justify-between items-center mt-4">
-        <span className="font-medium text-white">
-          Stipend: {internship.stipend ? `₹${internship.stipend}` : 'Not specified'}
-        </span>
-        <button
-          className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm rounded transition-colors"
-          onClick={() => applyForInternship(internship._id)}
-        >
-          Apply
-        </button>
-      </div>
-    </div>
-  );
+  const filteredInternships = showRecommended 
+    ? recommendedInternships.filter((internship) => {
+        if (!searchTerm) return true;
+        
+        if (filter === "company") {
+          return internship.company.toLowerCase().includes(searchTerm.toLowerCase());
+        } else if (filter === "skills") {
+          return internship.skillsRequired?.some(skill => 
+            skill.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+        return (
+          internship.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          internship.skillsRequired?.some(skill => 
+            skill.toLowerCase().includes(searchTerm.toLowerCase())
+          ) ||
+          internship.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      })
+    : internships;
+
+  if (loading) return null;
 
   return (
     <div className="flex h-screen bg-black text-white overflow-hidden">
@@ -237,40 +155,48 @@ const StudentDashboard = () => {
 
         <nav className="p-4 space-y-2">
           <button
-            onClick={() => { setCurrentTab('dashboard'); setSidebarOpen(false); }}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${currentTab === 'dashboard' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+            onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'dashboard' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
           >
             <FiHome size={20} />
             <span>Dashboard</span>
           </button>
           <button
-            onClick={() => { setCurrentTab('internships'); setSidebarOpen(false); }}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${currentTab === 'internships' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+            onClick={() => { setActiveTab('internships'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'internships' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
           >
             <FiBriefcase size={20} />
             <span>Internships</span>
           </button>
           <button
-            onClick={() => { setCurrentTab('profile'); setSidebarOpen(false); }}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${currentTab === 'profile' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+            onClick={() => { setActiveTab('profile'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'profile' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
           >
             <FiUser size={20} />
             <span>My Profile</span>
           </button>
           <button
-            onClick={() => { setCurrentTab('settings'); setSidebarOpen(false); }}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${currentTab === 'settings' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+            onClick={() => { setActiveTab('schedule'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'schedule' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+          >
+            <FiCalendar size={20} />
+            <span>Schedule</span>
+          </button>
+          <button
+            onClick={() => { setActiveTab('messages'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'messages' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+          >
+            <FiMessageSquare size={20} />
+            <span>Messages</span>
+          </button>
+          <button
+            onClick={() => { setActiveTab('settings'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${activeTab === 'settings' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
           >
             <FiSettings size={20} />
             <span>Settings</span>
           </button>
         </nav>
-
-        <div className="p-4 border-t border-white/10">
-          <button className="w-full py-2 text-sm bg-red-600/90 hover:bg-red-700/90 rounded-lg transition-colors">
-            Logout
-          </button>
-        </div>
       </div>
 
       {/* Main content */}
@@ -289,354 +215,362 @@ const StudentDashboard = () => {
               <p className="font-medium">Student</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
-              <span className="text-blue-400 font-medium">ST</span>
+              <span className="text-blue-400 font-medium">S</span>
             </div>
           </div>
         </header>
 
         {/* Dashboard content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-b from-black to-neutral-900/50">
-          {error && (
-            <div className="mb-4 p-4 bg-red-900/20 text-red-300 rounded-lg text-sm border border-red-800/50">
-              {error}
-              <button onClick={() => setError(null)} className="float-right">
-                <FiX size={18} />
-              </button>
+          {activeTab === 'dashboard' && (
+            <div>
+              <h2 className="text-2xl md:text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300 mb-6">
+                Dashboard
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                  <h3 className="text-lg font-medium mb-4">Upcoming Events</h3>
+                  {/* Placeholder for events */}
+                  <p className="text-neutral-400">No upcoming events</p>
+                </div>
+                <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                  <h3 className="text-lg font-medium mb-4">Recent Applications</h3>
+                  {/* Placeholder for applications */}
+                  <p className="text-neutral-400">No recent applications</p>
+                </div>
+              </div>
+              
+              <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <h3 className="text-lg font-medium mb-4">Recommended Internships</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {recommendedInternships.slice(0, 3).map((internship) => (
+                    <InternshipCard 
+                      key={internship._id} 
+                      internship={internship} 
+                      onApply={applyForInternship}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           )}
-          
-          {currentTab === 'dashboard' && (
-            <>
-              <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
-                  Student Dashboard
-                </h1>
+
+          {activeTab === 'internships' && (
+            <div>
+              <div className="flex flex-col md:flex-row items-center justify-between mb-6">
+                <h2 className="text-2xl md:text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
+                  Internship Opportunities
+                </h2>
+                <div className="flex space-x-4 mt-4 md:mt-0">
+                  <button
+                    onClick={() => setShowRecommended(!showRecommended)}
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium transition-all"
+                  >
+                    {showRecommended ? "Show All" : "Get Recommendations"}
+                  </button>
+                </div>
               </div>
 
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 transition-all hover:border-blue-500/30">
-                  <h3 className="text-sm text-neutral-400">Applied Internships</h3>
-                  <div className="text-2xl md:text-3xl font-bold mt-2">12</div>
-                </div>
-                <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 transition-all hover:border-blue-500/30">
-                  <h3 className="text-sm text-neutral-400">Active Applications</h3>
-                  <div className="text-2xl md:text-3xl font-bold mt-2">5</div>
-                </div>
-                <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 transition-all hover:border-blue-500/30">
-                  <h3 className="text-sm text-neutral-400">Upcoming Interviews</h3>
-                  <div className="text-2xl md:text-3xl font-bold mt-2">2</div>
-                </div>
-              </div>
-              
-              {/* Recent Internships */}
-              <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 md:p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl md:text-2xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
-                    Available Internships
-                  </h2>
-                </div>
-                
-                {loading ? (
-                  <div className="text-center py-8 text-neutral-400">Loading internships...</div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {internships.length > 0 ? (
-                      internships.slice(0, 3).map(renderInternshipCard)
-                    ) : (
-                      <div className="col-span-full text-center py-8 text-neutral-400">
-                        No internships available
-                      </div>
-                    )}
+              {showRecommended && (
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 mb-6 rounded-lg bg-neutral-900/50 border border-white/10">
+                  <h3 className="text-lg font-medium text-white">Recommended For You</h3>
+                  
+                  <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                    <input
+                      type="text"
+                      placeholder="Search internships..."
+                      className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    
+                    <select
+                      className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={filter}
+                      onChange={(e) => setFilter(e.target.value)}
+                    >
+                      <option value="all">All</option>
+                      <option value="company">Company</option>
+                      <option value="skills">Skills</option>
+                    </select>
                   </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {currentTab === 'internships' && (
-            <>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-                <h1 className="text-3xl md:text-4xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
-                  Available Internships
-                </h1>
-              </div>
-              
-              <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 md:p-6">
-                {loading ? (
-                  <div className="text-center py-8 text-neutral-400">Loading internships...</div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {internships.length > 0 ? (
-                      internships.map(renderInternshipCard)
-                    ) : (
-                      <div className="col-span-full text-center py-8 text-neutral-400">
-                        No internships available
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {currentTab === 'application' && selectedInternship && (
-            <>
-              <button 
-                onClick={() => setCurrentTab('internships')}
-                className="mb-4 flex items-center text-neutral-400 hover:text-white"
-              >
-                <FiArrowLeft className="mr-1" />
-                Back to Internships
-              </button>
-
-              <h1 className="text-2xl md:text-3xl font-medium mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
-                Apply for {selectedInternship.title} at {selectedInternship.company}
-              </h1>
-              
-              {error && (
-                <div className="mb-4 p-4 bg-red-900/20 text-red-300 rounded-lg text-sm border border-red-800/50">
-                  {error}
                 </div>
               )}
 
-              <form onSubmit={handleApplicationSubmit} className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-6">
-                <div className="mb-4">
-                  <label className="block text-neutral-300 mb-2">
-                    Resume (PDF only, max 5MB)
-                  </label>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-neutral-800 file:text-white hover:file:bg-neutral-700"
-                    required
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredInternships.map((internship) => (
+                  <InternshipCard 
+                    key={internship._id} 
+                    internship={internship} 
+                    onApply={applyForInternship}
                   />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-neutral-300 mb-2">Cover Letter</label>
-                  <textarea
-                    name="coverLetter"
-                    value={applicationData.coverLetter}
-                    onChange={handleApplicationInputChange}
-                    className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded"
-                    rows="8"
-                    placeholder="Explain why you're a good fit for this internship..."
-                    required
-                  />
-                </div>
-
-                <div className="flex justify-end gap-3 mt-6">
-                  <button
-                    type="button"
-                    onClick={() => setCurrentTab('internships')}
-                    className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Submitting...
-                      </>
-                    ) : 'Submit Application'}
-                  </button>
-                </div>
-              </form>
-            </>
+                ))}
+              </div>
+            </div>
           )}
 
-          {currentTab === 'profile' && (
-            <>
-              <div className="mb-8">
-                <h1 className="text-3xl md:text-4xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
-                  My Profile
-                </h1>
-              </div>
-              
-              <form onSubmit={handleProfileSubmit} className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Skills (comma-separated):</label>
-                    <input 
-                      type="text" 
-                      name="skills" 
-                      value={profileData.skills.join(", ")} 
-                      onChange={(e) => handleProfileArrayChange(e, "skills")} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
+          {activeTab === 'profile' && (
+            <div>
+              <h2 className="text-2xl md:text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300 mb-6">
+                My Profile
+              </h2>
+              <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Skills (comma-separated):</label>
+                      <input 
+                        type="text" 
+                        name="skills" 
+                        value={formData.skills.join(", ")} 
+                        onChange={(e) => handleArrayChange(e, "skills")} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Interests (comma-separated):</label>
+                      <input 
+                        type="text" 
+                        name="interests" 
+                        value={formData.interests.join(", ")} 
+                        onChange={(e) => handleArrayChange(e, "interests")} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">CGPA:</label>
+                      <input 
+                        type="number" 
+                        name="cgpa" 
+                        value={formData.cgpa} 
+                        onChange={handleChange} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                        step="0.1" 
+                        min="0" 
+                        max="10" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Resume (URL):</label>
+                      <input 
+                        type="url" 
+                        name="resume" 
+                        value={formData.resume} 
+                        onChange={handleChange} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Achievements (comma-separated):</label>
+                      <input 
+                        type="text" 
+                        name="achievements" 
+                        value={formData.achievements.join(", ")} 
+                        onChange={(e) => handleArrayChange(e, "achievements")} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Phone Number:</label>
+                      <input 
+                        type="text" 
+                        name="phoneNumber" 
+                        value={formData.phoneNumber} 
+                        onChange={handleChange} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">LinkedIn Profile:</label>
+                      <input 
+                        type="url" 
+                        name="linkedinProfile" 
+                        value={formData.linkedinProfile} 
+                        onChange={handleChange} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Portfolio Website:</label>
+                      <input 
+                        type="url" 
+                        name="portfolioWebsite" 
+                        value={formData.portfolioWebsite} 
+                        onChange={handleChange} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Certifications (comma-separated):</label>
+                      <input 
+                        type="text" 
+                        name="certifications" 
+                        value={formData.certifications.join(", ")} 
+                        onChange={(e) => handleArrayChange(e, "certifications")} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Availability:</label>
+                      <select 
+                        name="availability" 
+                        value={formData.availability} 
+                        onChange={handleChange} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                      >
+                        <option value="">Select</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Full-time">Full-time</option>
+                        <option value="Internship">Internship</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Preferred Roles (comma-separated):</label>
+                      <input 
+                        type="text" 
+                        name="preferredRoles" 
+                        value={formData.preferredRoles.join(", ")} 
+                        onChange={(e) => handleArrayChange(e, "preferredRoles")} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">Location Preference:</label>
+                      <input 
+                        type="text" 
+                        name="locationPreference" 
+                        value={formData.locationPreference} 
+                        onChange={handleChange} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-neutral-300 mb-1">References (comma-separated):</label>
+                      <input 
+                        type="text" 
+                        name="references" 
+                        value={formData.references.join(", ")} 
+                        onChange={(e) => handleArrayChange(e, "references")} 
+                        className="w-full p-3 rounded-lg bg-neutral-800 border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Interests (comma-separated):</label>
-                    <input 
-                      type="text" 
-                      name="interests" 
-                      value={profileData.interests.join(", ")} 
-                      onChange={(e) => handleProfileArrayChange(e, "interests")} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">CGPA:</label>
-                    <input 
-                      type="number" 
-                      name="cgpa" 
-                      value={profileData.cgpa} 
-                      onChange={handleProfileChange} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                      step="0.1" 
-                      min="0" 
-                      max="10" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Resume (URL):</label>
-                    <input 
-                      type="url" 
-                      name="resume" 
-                      value={profileData.resume} 
-                      onChange={handleProfileChange} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Achievements (comma-separated):</label>
-                    <input 
-                      type="text" 
-                      name="achievements" 
-                      value={profileData.achievements.join(", ")} 
-                      onChange={(e) => handleProfileArrayChange(e, "achievements")} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Phone Number:</label>
-                    <input 
-                      type="text" 
-                      name="phoneNumber" 
-                      value={profileData.phoneNumber} 
-                      onChange={handleProfileChange} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">LinkedIn Profile:</label>
-                    <input 
-                      type="url" 
-                      name="linkedinProfile" 
-                      value={profileData.linkedinProfile} 
-                      onChange={handleProfileChange} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Portfolio Website:</label>
-                    <input 
-                      type="url" 
-                      name="portfolioWebsite" 
-                      value={profileData.portfolioWebsite} 
-                      onChange={handleProfileChange} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Certifications (comma-separated):</label>
-                    <input 
-                      type="text" 
-                      name="certifications" 
-                      value={profileData.certifications.join(", ")} 
-                      onChange={(e) => handleProfileArrayChange(e, "certifications")} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Availability:</label>
-                    <select 
-                      name="availability" 
-                      value={profileData.availability} 
-                      onChange={handleProfileChange} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded"
-                    >
-                      <option value="">Select</option>
-                      <option value="Part-time">Part-time</option>
-                      <option value="Full-time">Full-time</option>
-                      <option value="Internship">Internship</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Preferred Roles (comma-separated):</label>
-                    <input 
-                      type="text" 
-                      name="preferredRoles" 
-                      value={profileData.preferredRoles.join(", ")} 
-                      onChange={(e) => handleProfileArrayChange(e, "preferredRoles")} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">Location Preference:</label>
-                    <input 
-                      type="text" 
-                      name="locationPreference" 
-                      value={profileData.locationPreference} 
-                      onChange={handleProfileChange} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-neutral-300 mb-2">References (comma-separated):</label>
-                    <input 
-                      type="text" 
-                      name="references" 
-                      value={profileData.references.join(", ")} 
-                      onChange={(e) => handleProfileArrayChange(e, "references")} 
-                      className="w-full px-3 py-2 bg-neutral-900/70 border border-white/10 text-white rounded" 
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6">
                   <button 
                     type="submit" 
-                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors"
+                    className="w-full md:w-auto px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-all"
                   >
                     Update Profile
                   </button>
-                </div>
-              </form>
-            </>
+                </form>
+              </div>
+            </div>
           )}
 
-          {currentTab === 'settings' && (
-            <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-6">
-              <h2 className="text-xl md:text-2xl font-medium mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
+          {activeTab === 'schedule' && (
+            <div>
+              <h2 className="text-2xl md:text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300 mb-6">
+                My Schedule
+              </h2>
+              <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <p className="text-neutral-400">Schedule content will go here</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'messages' && (
+            <div>
+              <h2 className="text-2xl md:text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300 mb-6">
+                Messages
+              </h2>
+              <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <p className="text-neutral-400">Messages content will go here</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div>
+              <h2 className="text-2xl md:text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300 mb-6">
                 Settings
               </h2>
-              <p className="text-neutral-400">Settings content will go here</p>
+              <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                <p className="text-neutral-400">Settings content will go here</p>
+              </div>
             </div>
           )}
         </main>
+      </div>
+    </div>
+  );
+};
+
+// Reusable Internship Card Component
+const InternshipCard = ({ internship, onApply }) => {
+  return (
+    <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:border-blue-500/30 transition-all">
+      <div className="flex items-start mb-3">
+        <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+          <span className="text-blue-400 font-medium">
+            {internship.company.charAt(0)}
+          </span>
+        </div>
+        <div>
+          <h3 className="font-medium text-white">{internship.company}</h3>
+          <p className="text-sm text-neutral-300">{internship.title}</p>
+        </div>
+      </div>
+      
+      <div className="flex flex-wrap gap-2 my-3">
+        <span className="px-2 py-1 bg-neutral-800 text-neutral-300 text-xs rounded">
+          {internship.mode}
+        </span>
+        <span className="px-2 py-1 bg-neutral-800 text-neutral-300 text-xs rounded">
+          {internship.department}
+        </span>
+        {internship.skillsRequired?.slice(0, 2).map((skill, index) => (
+          <span key={index} className="px-2 py-1 bg-neutral-800 text-neutral-300 text-xs rounded">
+            {skill}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-4">
+        <div className="flex justify-between text-sm mb-1">
+          <span className="text-neutral-400">Duration</span>
+          <span className="text-white">{internship.internshipDuration}</span>
+        </div>
+        <div className="flex justify-between text-sm mb-1">
+          <span className="text-neutral-400">Stipend</span>
+          <span className="text-white">₹{internship.stipend || 'Not specified'}</span>
+        </div>
+      </div>
+      
+      <div className="mt-4 flex space-x-2">
+        <button 
+          className="flex-1 py-2 text-sm bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+          onClick={() => {/* View details action */}}
+        >
+          Details
+        </button>
+        <button 
+          className="flex-1 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
+          onClick={() => onApply(internship._id)}
+        >
+          Apply
+        </button>
       </div>
     </div>
   );
