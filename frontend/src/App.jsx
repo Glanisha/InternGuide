@@ -11,6 +11,7 @@ import Internship from './pages/Student/Internship';
 import AdminDashboard from './components/Admin/Admin';
 import LandingPage from './pages/InternGuidePage';
 import FacultyDashboard from './components/Faculty/FacultyDashboard';
+import StudentDashboard from './components/Student/StudentDashboard';
 
 
 const App = () => {
@@ -22,10 +23,7 @@ const App = () => {
         <Route path="/register" element={<RegisterForm />} />
 
         <Route element={<ProtectedRoute />}>
-        <Route path="/student-dashboard" element={<Sdashboard />}>
-        <Route path="updateform" element={<UpdateProfile/>} />
-        <Route path="internships" element={<Internship/>} />
-        </Route>
+        <Route path="/student-dashboard" element={<StudentDashboard/>}/>
         </Route>
 
         <Route element={<ProtectedRoute />}>

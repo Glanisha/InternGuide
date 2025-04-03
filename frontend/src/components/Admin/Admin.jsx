@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Home, Briefcase, Users, Settings, X, Menu as MenuIcon, Plus, Edit, Trash, Search } from 'react-feather';
+import { FiMenu, FiX, FiHome, FiBriefcase, FiUsers, FiSettings, FiPlus, FiEdit2, FiTrash2, FiSearch, FiChevronDown, FiCalendar } from 'react-icons/fi';
 
 // Axios instance setup
 const api = axios.create({
@@ -178,188 +178,182 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-950 text-gray-100 overflow-hidden">
-      {/* Sidebar - Mobile */}
-      <div className={`lg:hidden fixed inset-0 z-40 ${sidebarOpen ? 'block' : 'hidden'}`}>
-        <div className="absolute inset-0 bg-black bg-opacity-70" onClick={toggleSidebar}></div>
-        <nav className="relative z-50 flex flex-col w-64 bg-gray-900 bg-opacity-80 backdrop-blur-lg border-r border-gray-800 p-4 transform transition-all duration-300">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">Admin Portal</h1>
-            <button onClick={toggleSidebar} className="p-2 rounded-md hover:bg-gray-800">
-              <X size={24} />
-            </button>
-          </div>
-          {renderNavItems()}
-          <div className="mt-auto pt-4 border-t border-gray-800">
-            <button className="w-full px-4 py-2 bg-red-600/90 hover:bg-red-700/90 rounded-md transition-colors flex items-center justify-center gap-2">
-              Logout
-            </button>
-          </div>
-        </nav>
-      </div>
+    <div className="flex h-screen bg-black text-white overflow-hidden">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20 lg:hidden" 
+          onClick={toggleSidebar}
+        />
+      )}
 
-      {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex flex-col w-60 bg-gray-900/80 backdrop-blur-lg border-r border-gray-800">
-        <div className="p-4 border-b border-gray-800">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">Admin Portal</h1>
+      {/* Sidebar */}
+      <div className={`fixed lg:static inset-y-0 left-0 w-64 bg-neutral-900/70 backdrop-blur-sm border-r border-white/10 z-30 transition-all duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-4 flex items-center justify-between border-b border-white/10">
+          <h1 className="text-xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
+            Admin Portal
+          </h1>
+          <button 
+            onClick={toggleSidebar} 
+            className="lg:hidden text-neutral-400 hover:text-white"
+          >
+            <FiX size={24} />
+          </button>
         </div>
-        <nav className="flex-1 p-4 overflow-y-auto">
-          {renderNavItems()}
+
+        <nav className="p-4 space-y-2">
+          <button
+            onClick={() => { setCurrentTab('dashboard'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${currentTab === 'dashboard' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+          >
+            <FiHome size={20} />
+            <span>Dashboard</span>
+          </button>
+          <button
+            onClick={() => { setCurrentTab('internships'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${currentTab === 'internships' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+          >
+            <FiBriefcase size={20} />
+            <span>Internships</span>
+          </button>
+          <button
+            onClick={() => { setCurrentTab('mentors'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${currentTab === 'mentors' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+          >
+            <FiUsers size={20} />
+            <span>Mentor Assignment</span>
+          </button>
+          <button
+            onClick={() => { setCurrentTab('settings'); setSidebarOpen(false); }}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${currentTab === 'settings' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+          >
+            <FiSettings size={20} />
+            <span>Settings</span>
+          </button>
         </nav>
-        <div className="p-4 border-t border-gray-800">
-          <button className="w-full px-4 py-2 bg-red-600/90 hover:bg-red-700/90 rounded-md transition-colors">
+
+        <div className="p-4 border-t border-white/10">
+          <button className="w-full py-2 text-sm bg-red-600/90 hover:bg-red-700/90 rounded-lg transition-colors">
             Logout
           </button>
         </div>
-      </aside>
+      </div>
 
-      {/* Main Content */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-950 p-4 md:p-6">
+        {/* Top bar */}
+        <header className="bg-neutral-900/70 backdrop-blur-sm border-b border-white/10 p-4 flex items-center justify-between">
+          <button 
+            onClick={toggleSidebar} 
+            className="lg:hidden text-neutral-400 hover:text-white"
+          >
+            <FiMenu size={24} />
+          </button>
+          <div className="flex items-center space-x-4">
+            <div className="text-right hidden sm:block">
+              <p className="text-sm text-neutral-400">Admin</p>
+              <p className="font-medium">Dashboard</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+              <span className="text-blue-400 font-medium">AD</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard content */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-b from-black to-neutral-900/50">
           {error && (
-            <div className="col-span-12 bg-red-900/50 text-red-200 p-4 mb-4 rounded-lg backdrop-blur-sm">
+            <div className="mb-4 p-4 bg-red-900/20 text-red-300 rounded-lg text-sm border border-red-800/50">
               {error}
               <button onClick={() => setError(null)} className="float-right">
-                <X size={18} />
+                <FiX size={18} />
               </button>
             </div>
           )}
           
-          <div className="grid grid-cols-12 gap-4 md:gap-6">
-            {currentTab === 'dashboard' && (
-              <>
-                <h1 className="col-span-12 text-3xl md:text-4xl font-bold mb-6">Admin Dashboard</h1>
-                {/* Stats Cards */}
-                <div className="col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
-                  <StatCard title="Total Students" value={stats.totalStudents} color="from-blue-400 to-blue-600" />
-                  <StatCard title="Total Mentors" value={stats.totalMentors} color="from-purple-400 to-purple-600" />
-                  <StatCard title="Active Internships" value={stats.activeInternships} color="from-green-400 to-green-600" />
-                  <StatCard title="Ongoing Internships" value={stats.ongoingInternships} color="from-yellow-400 to-yellow-600" />
-                </div>
-                
-                {/* Recent Internships */}
-                <div className="col-span-12 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-4 md:p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold">Recent Internships</h2>
-                    <button 
-                      onClick={() => setCurrentTab('create')}
-                      className="px-3 py-1.5 bg-blue-600/90 hover:bg-blue-700/90 rounded-md transition-colors flex items-center gap-2 text-sm"
-                    >
-                      <Plus size={16} />
-                      Add New
-                    </button>
-                  </div>
-                  {loading ? (
-                    <div className="text-center py-8">Loading internships...</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-800">
-                        <thead className="bg-gray-800/50">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Title</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Company</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Department</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Deadline</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Duration</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-800">
-                          {filteredInternships.map((internship) => (
-                            <tr key={internship._id} className="hover:bg-gray-900/50 transition-colors">
-                              <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.title}</td>
-                              <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.company}</td>
-                              <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.department}</td>
-                              <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.applicationDeadline}</td>
-                              <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.internshipDuration}</td>
-                              <td className="px-4 py-4 whitespace-nowrap">
-                                <div className="flex space-x-2">
-                                  <button 
-                                    onClick={() => handleEdit(internship)}
-                                    className="p-1 text-blue-400 hover:text-blue-300 rounded hover:bg-gray-800/50"
-                                  >
-                                    <Edit size={18} />
-                                  </button>
-                                  <button 
-                                    onClick={() => handleDelete(internship._id)}
-                                    className="p-1 text-red-400 hover:text-red-300 rounded hover:bg-gray-800/50"
-                                  >
-                                    <Trash size={18} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
+          {currentTab === 'dashboard' && (
+            <>
+              <div className="mb-8">
+                <h1 className="text-3xl md:text-4xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
+                  Admin Dashboard
+                </h1>
+              </div>
 
-            {currentTab === 'internships' && (
-              <>
-                <div className="col-span-12 flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-                  <h1 className="text-3xl md:text-4xl font-bold">Manage Internships</h1>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative max-w-xs">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search size={18} className="text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={handleSearch}
-                        className="block w-full pl-10 pr-3 py-2 bg-gray-800/50 border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                        placeholder="Search internships..."
-                      />
-                    </div>
-                    <button 
-                      onClick={() => setCurrentTab('create')}
-                      className="px-4 py-2 bg-blue-600/90 hover:bg-blue-700/90 rounded-md transition-colors flex items-center justify-center gap-2 text-sm"
-                    >
-                      <Plus size={18} />
-                      Create New
-                    </button>
-                  </div>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <StatCard 
+                  title="Total Students" 
+                  value={stats.totalStudents} 
+                  icon={<FiUsers size={24} className="text-blue-400" />}
+                />
+                <StatCard 
+                  title="Total Mentors" 
+                  value={stats.totalMentors} 
+                  icon={<FiUsers size={24} className="text-purple-400" />}
+                />
+                <StatCard 
+                  title="Active Internships" 
+                  value={stats.activeInternships} 
+                  icon={<FiBriefcase size={24} className="text-green-400" />}
+                />
+                <StatCard 
+                  title="Ongoing Internships" 
+                  value={stats.ongoingInternships} 
+                  icon={<FiBriefcase size={24} className="text-yellow-400" />}
+                />
+              </div>
+              
+              {/* Recent Internships */}
+              <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 md:p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl md:text-2xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
+                    Recent Internships
+                  </h2>
+                  <button 
+                    onClick={() => setCurrentTab('create')}
+                    className="px-4 py-2 bg-white hover:bg-white/90 text-black rounded-lg flex items-center gap-2 text-sm"
+                  >
+                    <FiPlus size={16} />
+                    Add New
+                  </button>
                 </div>
                 
-                <div className="col-span-12 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-4 md:p-6">
+                {loading ? (
+                  <div className="text-center py-8 text-neutral-400">Loading internships...</div>
+                ) : (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-800">
-                      <thead className="bg-gray-800/50">
+                    <table className="min-w-full divide-y divide-white/10">
+                      <thead className="bg-neutral-800/50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Title</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Company</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Department</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Deadline</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Duration</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Title</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Company</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Department</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Deadline</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Duration</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-800">
-                        {filteredInternships.map((internship) => (
-                          <tr key={internship._id} className="hover:bg-gray-900/50 transition-colors">
-                            <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.title}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.company}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.department}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.applicationDeadline}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm">{internship.internshipDuration}</td>
+                      <tbody className="divide-y divide-white/10">
+                        {filteredInternships.slice(0, 5).map((internship) => (
+                          <tr key={internship._id} className="hover:bg-neutral-800/30 transition-colors">
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-200">{internship.title}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.company}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.department}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.applicationDeadline}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.internshipDuration}</td>
                             <td className="px-4 py-4 whitespace-nowrap">
                               <div className="flex space-x-2">
                                 <button 
                                   onClick={() => handleEdit(internship)}
-                                  className="p-1 text-blue-400 hover:text-blue-300 rounded hover:bg-gray-800/50"
+                                  className="p-1.5 text-blue-400 hover:text-blue-300 rounded-lg hover:bg-neutral-800/50 transition-all"
                                 >
-                                  <Edit size={18} />
+                                  <FiEdit2 size={16} />
                                 </button>
                                 <button 
                                   onClick={() => handleDelete(internship._id)}
-                                  className="p-1 text-red-400 hover:text-red-300 rounded hover:bg-gray-800/50"
+                                  className="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-neutral-800/50 transition-all"
                                 >
-                                  <Trash size={18} />
+                                  <FiTrash2 size={16} />
                                 </button>
                               </div>
                             </td>
@@ -368,295 +362,365 @@ export default function AdminDashboard() {
                       </tbody>
                     </table>
                   </div>
-                </div>
-              </>
-            )}
+                )}
+              </div>
+            </>
+          )}
 
-            {currentTab === 'create' && (
-              <>
-                <div className="col-span-12 mb-6">
-                  <h1 className="text-3xl md:text-4xl font-bold">
-                    {editMode ? 'Edit Internship' : 'Create New Internship'}
-                  </h1>
+          {currentTab === 'internships' && (
+            <>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+                <h1 className="text-3xl md:text-4xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
+                  Manage Internships
+                </h1>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiSearch className="text-neutral-400" size={18} />
+                    </div>
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={handleSearch}
+                      className="pl-10 pr-4 py-2 bg-neutral-900/70 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-full"
+                      placeholder="Search internships..."
+                    />
+                  </div>
+                  <button 
+                    onClick={() => setCurrentTab('create')}
+                    className="px-4 py-2 bg-white hover:bg-white/90 text-black rounded-lg flex items-center gap-2 text-sm"
+                  >
+                    <FiPlus size={16} />
+                    Create New
+                  </button>
                 </div>
-                
-                <div className="col-span-12 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-4 md:p-6">
-                  <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Title</label>
-                        <input
-                          type="text"
-                          name="title"
-                          value={formData.title}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Company</label>
-                        <input
-                          type="text"
-                          name="company"
-                          value={formData.company}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Department</label>
-                        <input
-                          type="text"
-                          name="department"
-                          value={formData.department}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Application Deadline</label>
+              </div>
+              
+              <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 md:p-6">
+                {loading ? (
+                  <div className="text-center py-8 text-neutral-400">Loading internships...</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-white/10">
+                      <thead className="bg-neutral-800/50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Title</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Company</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Department</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Deadline</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Duration</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/10">
+                        {filteredInternships.map((internship) => (
+                          <tr key={internship._id} className="hover:bg-neutral-800/30 transition-colors">
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-200">{internship.title}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.company}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.department}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.applicationDeadline}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.internshipDuration}</td>
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="flex space-x-2">
+                                <button 
+                                  onClick={() => handleEdit(internship)}
+                                  className="p-1.5 text-blue-400 hover:text-blue-300 rounded-lg hover:bg-neutral-800/50 transition-all"
+                                >
+                                  <FiEdit2 size={16} />
+                                </button>
+                                <button 
+                                  onClick={() => handleDelete(internship._id)}
+                                  className="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-neutral-800/50 transition-all"
+                                >
+                                  <FiTrash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {currentTab === 'create' && (
+            <>
+              <div className="mb-8">
+                <h1 className="text-3xl md:text-4xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
+                  {editMode ? 'Edit Internship' : 'Create New Internship'}
+                </h1>
+              </div>
+              
+              <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 md:p-6">
+                <form onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Title</label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Company</label>
+                      <input
+                        type="text"
+                        name="company"
+                        value={formData.company}
+                        onChange={handleInputChange}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Department</label>
+                      <input
+                        type="text"
+                        name="department"
+                        value={formData.department}
+                        onChange={handleInputChange}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Application Deadline</label>
+                      <div className="relative">
                         <input
                           type="date"
                           name="applicationDeadline"
                           value={formData.applicationDeadline}
                           onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white pr-10"
                           required
                         />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Internship Duration</label>
-                        <input
-                          type="text"
-                          name="internshipDuration"
-                          value={formData.internshipDuration}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="e.g. 3 months"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Stipend</label>
-                        <input
-                          type="text"
-                          name="stipend"
-                          value={formData.stipend}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="e.g. $4500/month"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Location</label>
-                        <input
-                          type="text"
-                          name="location"
-                          value={formData.location}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="e.g. San Francisco, CA"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Mode</label>
-                        <input
-                          type="text"
-                          name="mode"
-                          value={formData.mode}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="e.g. Onsite, Remote, or Hybrid"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Role</label>
-                        <input
-                          type="text"
-                          name="role"
-                          value={formData.role}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="e.g. UI/UX Designer Intern"
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">SDG Goals</label>
-                        <input
-                          type="text"
-                          name="sdgGoals"
-                          value={formData.sdgGoals}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="Comma separated goals"
-                        />
-                      </div>
-                      
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-1">Description</label>
-                        <textarea
-                          name="description"
-                          value={formData.description}
-                          onChange={handleInputChange}
-                          rows={4}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          required
-                        ></textarea>
-                      </div>
-                      
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium mb-1">Requirements</label>
-                        <textarea
-                          name="requirements"
-                          value={formData.requirements}
-                          onChange={handleInputChange}
-                          rows={4}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="Enter requirements separated by commas"
-                          required
-                        ></textarea>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Program Outcomes</label>
-                        <textarea
-                          name="programOutcomes"
-                          value={formData.programOutcomes}
-                          onChange={handleInputChange}
-                          rows={3}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="Enter program outcomes separated by commas"
-                        ></textarea>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Educational Objectives</label>
-                        <textarea
-                          name="educationalObjectives"
-                          value={formData.educationalObjectives}
-                          onChange={handleInputChange}
-                          rows={3}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="Enter educational objectives separated by commas"
-                        ></textarea>
+                        <FiCalendar className="absolute right-3 top-2.5 text-neutral-400" size={18} />
                       </div>
                     </div>
                     
-                    <div className="mt-6 flex justify-end space-x-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCurrentTab('internships');
-                          setEditMode(false);
-                          setFormData({
-                            title: '',
-                            company: '',
-                            description: '',
-                            requirements: '',
-                            department: '',
-                            sdgGoals: '',
-                            programOutcomes: '',
-                            educationalObjectives: '',
-                            applicationDeadline: '',
-                            internshipDuration: '',
-                            stipend: '',
-                            location: '',
-                            mode: '',
-                            role: ''
-                          });
-                        }}
-                        className="px-4 py-2 bg-gray-700/80 hover:bg-gray-600/80 rounded-md transition-colors text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-4 py-2 bg-blue-600/90 hover:bg-blue-700/90 rounded-md transition-colors text-sm"
-                      >
-                        {editMode ? 'Update Internship' : 'Create Internship'}
-                      </button>
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Internship Duration</label>
+                      <input
+                        type="text"
+                        name="internshipDuration"
+                        value={formData.internshipDuration}
+                        onChange={handleInputChange}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        placeholder="e.g. 3 months"
+                        required
+                      />
                     </div>
-                  </form>
-                </div>
-              </>
-            )}
-
-            {currentTab === 'mentors' && (
-              <>
-                <div className="col-span-12 mb-6">
-                  <h1 className="text-3xl md:text-4xl font-bold">Mentor Assignment</h1>
-                </div>
-                
-                <div className="col-span-12 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-8 text-center">
-                  <div className="max-w-2xl mx-auto">
-                    <h2 className="text-xl md:text-2xl font-semibold mb-4">Automatic Mentor Assignment</h2>
-                    <p className="text-gray-400 mb-6">
-                      Assign mentors to students based on matching skills, interests, and expertise.
-                      This process uses AI to find the best matches for optimal learning outcomes.
-                    </p>
-                    <button className="px-6 py-3 bg-blue-600/90 hover:bg-blue-700/90 rounded-md transition-colors">
-                      Run Mentor Assignment Algorithm
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Stipend</label>
+                      <input
+                        type="text"
+                        name="stipend"
+                        value={formData.stipend}
+                        onChange={handleInputChange}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        placeholder="e.g. $4500/month"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Location</label>
+                      <input
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleInputChange}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        placeholder="e.g. San Francisco, CA"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Mode</label>
+                      <div className="relative">
+                        <select
+                          name="mode"
+                          value={formData.mode}
+                          onChange={handleInputChange}
+                          className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white appearance-none"
+                        >
+                          <option value="">Select Mode</option>
+                          <option value="Onsite">Onsite</option>
+                          <option value="Remote">Remote</option>
+                          <option value="Hybrid">Hybrid</option>
+                        </select>
+                        <FiChevronDown className="absolute right-3 top-2.5 text-neutral-400 pointer-events-none" size={18} />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Role</label>
+                      <input
+                        type="text"
+                        name="role"
+                        value={formData.role}
+                        onChange={handleInputChange}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        placeholder="e.g. UI/UX Designer Intern"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">SDG Goals</label>
+                      <input
+                        type="text"
+                        name="sdgGoals"
+                        value={formData.sdgGoals}
+                        onChange={handleInputChange}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        placeholder="Comma separated goals"
+                      />
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Description</label>
+                      <textarea
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        rows={4}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        required
+                      ></textarea>
+                    </div>
+                    
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Requirements</label>
+                      <textarea
+                        name="requirements"
+                        value={formData.requirements}
+                        onChange={handleInputChange}
+                        rows={4}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        placeholder="Enter requirements separated by commas"
+                        required
+                      ></textarea>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Program Outcomes</label>
+                      <textarea
+                        name="programOutcomes"
+                        value={formData.programOutcomes}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        placeholder="Enter program outcomes separated by commas"
+                      ></textarea>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-neutral-300">Educational Objectives</label>
+                      <textarea
+                        name="educationalObjectives"
+                        value={formData.educationalObjectives}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className="w-full bg-neutral-900/70 border border-white/10 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-white"
+                        placeholder="Enter educational objectives separated by commas"
+                      ></textarea>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentTab('internships');
+                        setEditMode(false);
+                        setFormData({
+                          title: '',
+                          company: '',
+                          description: '',
+                          requirements: '',
+                          department: '',
+                          sdgGoals: '',
+                          programOutcomes: '',
+                          educationalObjectives: '',
+                          applicationDeadline: '',
+                          internshipDuration: '',
+                          stipend: '',
+                          location: '',
+                          mode: '',
+                          role: ''
+                        });
+                      }}
+                      className="px-4 py-2 bg-neutral-800/50 hover:bg-neutral-800/70 rounded-lg transition-colors text-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-white hover:bg-white/90 text-black rounded-lg transition-colors text-sm"
+                    >
+                      {editMode ? 'Update Internship' : 'Create Internship'}
                     </button>
                   </div>
+                </form>
+              </div>
+            </>
+          )}
+
+          {currentTab === 'mentors' && (
+            <>
+              <div className="mb-8">
+                <h1 className="text-3xl md:text-4xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
+                  Mentor Assignment
+                </h1>
+              </div>
+              
+              <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-8 text-center">
+                <div className="max-w-2xl mx-auto">
+                  <h2 className="text-xl md:text-2xl font-medium mb-4">Automatic Mentor Assignment</h2>
+                  <p className="text-neutral-400 mb-6">
+                    Assign mentors to students based on matching skills, interests, and expertise.
+                    This process uses AI to find the best matches for optimal learning outcomes.
+                  </p>
+                  <button className="px-6 py-3 bg-white hover:bg-white/90 text-black rounded-lg transition-colors">
+                    Run Mentor Assignment Algorithm
+                  </button>
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
+
+          {currentTab === 'settings' && (
+            <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-6">
+              <h2 className="text-xl md:text-2xl font-medium mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
+                Settings
+              </h2>
+              <p className="text-neutral-400">Settings content will go here</p>
+            </div>
+          )}
         </main>
       </div>
     </div>
   );
-
-  function renderNavItems() {
-    const navItems = [
-      { id: 'dashboard', label: 'Dashboard', icon: <Home size={20} /> },
-      { id: 'internships', label: 'Internships', icon: <Briefcase size={20} /> },
-      { id: 'mentors', label: 'Mentor Assignment', icon: <Users size={20} /> },
-      { id: 'settings', label: 'Settings', icon: <Settings size={20} /> }
-    ];
-
-    return (
-      <ul className="space-y-1">
-        {navItems.map((item) => (
-          <li key={item.id}>
-            <button
-              onClick={() => {
-                setCurrentTab(item.id);
-                setSidebarOpen(false);
-              }}
-              className={`flex items-center w-full p-3 rounded-lg transition-colors ${
-                currentTab === item.id 
-                  ? 'bg-gray-800 text-white font-medium' 
-                  : 'hover:bg-gray-800/50 text-gray-300'
-              }`}
-            >
-              <span className="mr-3">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    );
-  }
 }
 
-function StatCard({ title, value, color }) {
+function StatCard({ title, value, icon }) {
   return (
-    <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-4 transition-all hover:border-gray-700 hover:shadow-lg hover:shadow-blue-500/10">
-      <h3 className="text-gray-400 text-sm font-medium mb-2">{title}</h3>
-      <div className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${color} bg-clip-text text-transparent`}>
+    <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 transition-all hover:border-blue-500/30">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm text-neutral-400">{title}</h3>
+        {icon}
+      </div>
+      <div className="text-2xl md:text-3xl font-bold mt-2">
         {value}
       </div>
     </div>
