@@ -1,11 +1,11 @@
 import express from "express";
-import { assignMentors } from "../controllers/admin.controller.js";
+import { assignMentors , confirmMentors} from "../controllers/admin.controller.js";
 import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
 
 
 const router = express.Router();
 
-router.post("/assign", protect, authorizeRoles("admin"), assignMentors);
-
+router.get("/assign", protect, authorizeRoles("admin"), assignMentors);
+router.post('/confirm-mentors',protect, authorizeRoles("admin"), confirmMentors);
 
 export default router;
