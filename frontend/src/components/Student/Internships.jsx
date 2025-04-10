@@ -1,26 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import InternshipCard from './InternshipCard';
+import ApplicationFormModal from './ApplicationFormModal';
 
 const Internships = () => {
   const [internships, setInternships] = useState([]);
   const [recommendedInternships, setRecommendedInternships] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState('all');
   const [showRecommended, setShowRecommended] = useState(false);
+  const [selectedInternship, setSelectedInternship] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem('token');
 
         const [internshipsRes, recommendedRes] = await Promise.all([
-          axios.get("http://localhost:8000/api/internships"),
-          axios.get("http://localhost:8000/api/student/best-internship", {
+          axios.get('http://localhost:8000/api/internships'),
+          axios.get('http://localhost:8000/api/student/best-internship', {
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
           }),
         ]);
@@ -28,7 +31,7 @@ const Internships = () => {
         setInternships(internshipsRes.data);
         setRecommendedInternships(recommendedRes.data);
       } catch (error) {
-        console.error("Error fetching internships:", error);
+        console.error('Error fetching internships:', error);
       } finally {
         setLoading(false);
       }
@@ -37,23 +40,36 @@ const Internships = () => {
     fetchData();
   }, []);
 
-  const applyForInternship = async (id) => {
+  const handleApplyClick = (internship) => {
+    setSelectedInternship(internship);
+    setIsModalOpen(true);
+  };
+
+  const submitApplication = async (resumeFile) => {
+    if (!selectedInternship) return;
+
     try {
-      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append('resume', resumeFile);
+
+      const token = localStorage.getItem('token');
+
       await axios.post(
-        `http://localhost:8000/api/student/apply-internship/${id}`,
-        {},
+        `http://localhost:8000/api/internships/${selectedInternship._id}/apply`,
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
-      alert("Application submitted successfully!");
+
+      alert('Application submitted successfully!');
+      setIsModalOpen(false);
     } catch (error) {
-      console.error("Error applying for internship:", error);
-      alert("Failed to apply.");
+      console.error('Error applying for internship:', error);
+      alert('Failed to apply.');
     }
   };
 
@@ -63,9 +79,9 @@ const Internships = () => {
 
       const term = searchTerm.toLowerCase();
 
-      if (filter === "company") {
+      if (filter === 'company') {
         return internship.company.toLowerCase().includes(term);
-      } else if (filter === "skills") {
+      } else if (filter === 'skills') {
         return internship.skillsRequired?.some((skill) =>
           skill.toLowerCase().includes(term)
         );
@@ -92,7 +108,7 @@ const Internships = () => {
             onClick={() => setShowRecommended(!showRecommended)}
             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium transition-all"
           >
-            {showRecommended ? "Show All" : "Get Recommendations"}
+            {showRecommended ? 'Show All' : 'Get Recommendations'}
           </button>
         </div>
       </div>
@@ -131,7 +147,7 @@ const Internships = () => {
               <InternshipCard
                 key={internship._id}
                 internship={internship}
-                onApply={applyForInternship}
+                onApply={() => handleApplyClick(internship)}
               />
             ))
           ) : (
@@ -139,6 +155,14 @@ const Internships = () => {
           )}
         </div>
       )}
+
+      {/* Modal */}
+      <ApplicationFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={submitApplication}
+        internshipTitle={selectedInternship?.title}
+      />
     </div>
   );
 };
