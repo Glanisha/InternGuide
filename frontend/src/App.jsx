@@ -13,6 +13,7 @@ import Profile from './components/student/Profile';
 import Schedule from './components/student/Schedule';
 import Messages from './components/student/Messages';
 import Settings from './components/student/Settings';
+import ReportPage from './components/student/ReportPage';
 
 const App = () => {
   return (
@@ -29,7 +30,7 @@ const App = () => {
           <Route path="profile" element={<Profile />} />
           <Route path="schedule" element={<Schedule />} />
           <Route path="messages" element={<Messages />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="generate-report" element={<ReportPage/>} />
           <Route index element={<Dashboard />} />
         </Route>
         </Route>

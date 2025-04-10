@@ -25,10 +25,10 @@ router.get("/progress", trackProgress);
 router.get("/feedback", getFeedback);
 router.get("/report", generateReport);
 router.post("/sendMessage", sendMessage);
-router.get("/chat", getChatHistory); // Fetch chat history with assigned mentor
+router.get("/chat", getChatHistory); 
 router.get("/best-internship", protect, findBestInternship);
 router.put("/update", protect, updateStudentProfile); 
-router.get("/report/:studentId", generateStudentReport);
+router.get("/report/:studentId",  protect, generateStudentReport);
 
 
 export default router;

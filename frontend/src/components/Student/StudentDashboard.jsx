@@ -66,11 +66,11 @@ const StudentDashboard = () => {
             <span>Messages</span>
           </a>
           <a
-            href="/student/settings"
+            href="/student/generate-report"
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${location.pathname === '/student/settings' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
           >
             <FiSettings size={20} />
-            <span>Settings</span>
+            <span>Report</span>
           </a>
         </nav>
       </div>

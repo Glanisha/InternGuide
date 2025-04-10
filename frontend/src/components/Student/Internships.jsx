@@ -75,27 +75,47 @@ const Internships = () => {
 
   const filteredInternships = (showRecommended ? recommendedInternships : internships).filter(
     (internship) => {
-      if (!searchTerm) return true;
-
+      if (!searchTerm.trim()) return true;
+  
       const term = searchTerm.toLowerCase();
-
-      if (filter === 'company') {
-        return internship.company.toLowerCase().includes(term);
-      } else if (filter === 'skills') {
-        return internship.skillsRequired?.some((skill) =>
-          skill.toLowerCase().includes(term)
-        );
+  
+      const matches = (field) =>
+        typeof field === 'string'
+          ? field.toLowerCase().includes(term)
+          : Array.isArray(field)
+          ? field.some((item) => item.toLowerCase().includes(term))
+          : false;
+  
+      switch (filter) {
+        case 'title':
+          return matches(internship.title);
+        case 'company':
+          return matches(internship.company);
+        case 'skillsRequired':
+          return matches(internship.skillsRequired);
+        case 'location':
+          return matches(internship.location);
+        case 'stipend':
+          return matches(String(internship.stipend));
+        case 'duration':
+          return matches(internship.duration);
+        case 'description':
+          return matches(internship.description);
+        case 'all':
+        default:
+          return (
+            matches(internship.title) ||
+            matches(internship.company) ||
+            matches(internship.skillsRequired) ||
+            matches(internship.location) ||
+            matches(String(internship.stipend)) ||
+            matches(internship.duration) ||
+            matches(internship.description)
+          );
       }
-
-      return (
-        internship.company.toLowerCase().includes(term) ||
-        internship.title.toLowerCase().includes(term) ||
-        internship.skillsRequired?.some((skill) =>
-          skill.toLowerCase().includes(term)
-        )
-      );
     }
   );
+  
 
   return (
     <div>
@@ -113,30 +133,37 @@ const Internships = () => {
         </div>
       </div>
 
-      {showRecommended && (
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 mb-6 rounded-lg bg-neutral-900/50 border border-white/10">
-          <h3 className="text-lg font-medium text-white">Recommended For You</h3>
-          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-            <input
-              type="text"
-              placeholder="Search internships..."
-              className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 mb-6 rounded-lg bg-neutral-900/50 border border-white/10">
+  {showRecommended ? (
+    <h3 className="text-lg font-medium text-white">Recommended For You</h3>
+  ) : (
+    <h3 className="text-lg font-medium text-white">All Internships</h3>
+  )}
 
-            <select
-              className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="company">Company</option>
-              <option value="skills">Skills</option>
-            </select>
-          </div>
-        </div>
-      )}
+  <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+    <input
+      type="text"
+      placeholder="Search internships..."
+      className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
+    <select
+      className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      value={filter}
+      onChange={(e) => setFilter(e.target.value)}
+    >
+      <option value="all">All</option>
+      <option value="title">Title</option>
+      <option value="company">Company</option>
+      <option value="skillsRequired">Skills</option>
+      <option value="location">Location</option>
+      <option value="stipend">Stipend</option>
+      <option value="duration">Duration</option>
+    </select>
+  </div>
+</div>
+
 
       {loading ? (
         <p className="text-white">Loading internships...</p>
