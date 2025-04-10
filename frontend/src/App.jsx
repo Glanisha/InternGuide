@@ -14,6 +14,8 @@ import Schedule from './components/student/Schedule';
 import Messages from './components/student/Messages';
 import Settings from './components/student/Settings';
 import ReportPage from './components/student/ReportPage';
+import FacultyMentees from './components/Faculty/FacultyMentees';
+
 
 const App = () => {
   return (
@@ -34,11 +36,11 @@ const App = () => {
           <Route index element={<Dashboard />} />
         </Route>
         </Route>
-
-        <Route element={<ProtectedRoute />}>
-        <Route path="/faculty-dashboard" element={<FacultyDashboard/> } />
-    
-        </Route>
+        <Route path="/faculty" element={<FacultyDashboard />}>
+   
+    <Route path="mentees" element={<FacultyMentees />} />
+ 
+  </Route>
 
 
         <Route path="/admin-dashboard" element={<AdminDashboard/>} />
