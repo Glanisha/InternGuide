@@ -28,8 +28,7 @@ export const updateFacultyProfile = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
   };
- 
-export const getFacultyMentees = async (req, res) => {
+  export const getFacultyMentees = async (req, res) => {
     try {
       console.log("User from request:", req.user);
   
@@ -38,14 +37,23 @@ export const getFacultyMentees = async (req, res) => {
         return res.status(400).json({ error: "User ID missing in request" });
       }
   
-      const faculty = await Faculty.findOne({ userId: facultyId }).populate("assignedStudents");
+      const faculty = await Faculty.findOne({ userId: facultyId }).populate({
+        path: "assignedStudents",
+        populate: {
+          path: "appliedInternships.internship",
+          model: "Internship"
+        }
+      });
   
       if (!faculty) {
         console.log("Faculty not found for user ID:", facultyId);
         return res.status(404).json({ error: "Faculty not found" });
       }
   
+      // Optional: Just for logging
       console.log("Faculty found:", faculty.name);
+  
+      // Send fully enriched student data
       res.status(200).json({
         message: "Mentees fetched successfully",
         mentees: faculty.assignedStudents,
@@ -56,3 +64,4 @@ export const getFacultyMentees = async (req, res) => {
       res.status(500).json({ error: "Internal server error" });
     }
   };
+  
