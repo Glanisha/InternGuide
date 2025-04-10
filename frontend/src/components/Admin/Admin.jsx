@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { baseApi } from '../../utils';
 import { FiMenu, FiX, FiHome, FiBriefcase, FiUsers, FiSettings, FiPlus, FiEdit2, FiTrash2, FiSearch, FiChevronDown, FiCalendar } from 'react-icons/fi';
 
 // Axios instance setup
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: baseApi,
   headers: {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${localStorage.getItem('token')}`,

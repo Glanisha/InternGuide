@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import InternshipCard from './InternshipCard';
 import axios from 'axios';
+import { getBestInternshipRoute } from '../../utils';
 
 const Dashboard = () => {
   const [recommendedInternships, setRecommendedInternships] = useState([]);
@@ -10,7 +11,7 @@ const Dashboard = () => {
     const fetchRecommendedInternships = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:8000/api/student/best-internship", {
+        const response = await axios.get(getBestInternshipRoute, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -19,7 +20,7 @@ const Dashboard = () => {
         setRecommendedInternships(response.data || []);
       } catch (error) {
         console.error("Error fetching recommended internships:", error);
-        setRecommendedInternships([]); // fallback to empty array
+        setRecommendedInternships([]); 
       } finally {
         setLoading(false);
       }

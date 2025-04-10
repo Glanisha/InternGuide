@@ -11,6 +11,7 @@ import {
   sendMessage,
   getChatHistory,
   findBestInternship,
+  generateStudentReport
 } from "../controllers/student.controller.js";
 import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
 
@@ -27,6 +28,7 @@ router.post("/sendMessage", sendMessage);
 router.get("/chat", getChatHistory); // Fetch chat history with assigned mentor
 router.get("/best-internship", protect, findBestInternship);
 router.put("/update", protect, updateStudentProfile); 
+router.get("/report/:studentId", generateStudentReport);
 
 
 export default router;
