@@ -2,17 +2,17 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
-import InternGuidePage from "./pages/InternGuidePage";
 import ProtectedRoute from './components/ProtectedRoute';
-import UpdateProfile from './components/Student/UpdateProfile';
-import AllInternships from './components/Student/AllInternships';
-import Sdashboard from './pages/Student/Sdashboard';
-import Internship from './pages/Student/Internship';
 import AdminDashboard from './components/Admin/Admin';
 import LandingPage from './pages/InternGuidePage';
 import FacultyDashboard from './components/Faculty/FacultyDashboard';
 import StudentDashboard from './components/Student/StudentDashboard';
-
+import Dashboard from './components/student/Dashboard';
+import Internships from './components/student/Internships';
+import Profile from './components/student/Profile';
+import Schedule from './components/student/Schedule';
+import Messages from './components/student/Messages';
+import Settings from './components/student/Settings';
 
 const App = () => {
   return (
@@ -23,7 +23,15 @@ const App = () => {
         <Route path="/register" element={<RegisterForm />} />
 
         <Route element={<ProtectedRoute />}>
-        <Route path="/student-dashboard" element={<StudentDashboard/>}/>
+        <Route path="/student" element={<StudentDashboard />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="internships" element={<Internships />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="schedule" element={<Schedule />} />
+          <Route path="messages" element={<Messages />} />
+          <Route path="settings" element={<Settings />} />
+          <Route index element={<Dashboard />} />
+        </Route>
         </Route>
 
         <Route element={<ProtectedRoute />}>

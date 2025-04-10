@@ -20,7 +20,7 @@ const LoginForm = () => {
       localStorage.setItem('token', token);
 
       if (role === 'student') {
-        navigate('/student-dashboard');
+        navigate('/student');
       } else if (role === 'faculty') {
         navigate('/faculty-dashboard');
       } else if (role === 'admin') {
