@@ -22,7 +22,7 @@ const LoginForm = () => {
       if (role === 'student') {
         navigate('/student');
       } else if (role === 'faculty') {
-        navigate('/faculty-dashboard');
+        navigate('/faculty');
       } else if (role === 'admin') {
         navigate('/admin-dashboard');
       } else if (role === 'management') {

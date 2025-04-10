@@ -28,18 +28,24 @@ export const assignMentors = async (req, res) => {
       res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
 export const confirmMentors = async (req, res) => {
   try {
-      const { assignments } = req.body;
-      
-      for (const [studentId, facultyId] of Object.entries(assignments)) {
-        await Student.findByIdAndUpdate(studentId, { assignedMentor: facultyId });
-      }
-      
-      res.json({ message: "Mentors assignments confirmed and saved" });
+    const { assignments } = req.body;
+
+    for (const [studentId, facultyId] of Object.entries(assignments)) {
+      // 1. Update student
+      await Student.findByIdAndUpdate(studentId, { assignedMentor: facultyId });
+
+      // 2. Update faculty's assignedStudents
+      await Faculty.findByIdAndUpdate(
+        facultyId,
+        { $addToSet: { assignedStudents: studentId } } // use $addToSet to avoid duplicates
+      );
+    }
+
+    res.json({ message: "Mentor assignments confirmed and saved" });
   } catch (error) {
-      console.error("Error confirming mentors:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error confirming mentors:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };

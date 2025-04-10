@@ -1,4 +1,6 @@
 import Faculty from "../models/faculty.model.js";
+import Student from "../models/student.model.js";
+
 
 export const updateFacultyProfile = async (req, res) => {
     try {
@@ -26,4 +28,31 @@ export const updateFacultyProfile = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
   };
+ 
+export const getFacultyMentees = async (req, res) => {
+    try {
+      console.log("User from request:", req.user);
   
+      const facultyId = req.user?.id;
+      if (!facultyId) {
+        return res.status(400).json({ error: "User ID missing in request" });
+      }
+  
+      const faculty = await Faculty.findOne({ userId: facultyId }).populate("assignedStudents");
+  
+      if (!faculty) {
+        console.log("Faculty not found for user ID:", facultyId);
+        return res.status(404).json({ error: "Faculty not found" });
+      }
+  
+      console.log("Faculty found:", faculty.name);
+      res.status(200).json({
+        message: "Mentees fetched successfully",
+        mentees: faculty.assignedStudents,
+      });
+  
+    } catch (error) {
+      console.error("Error fetching faculty mentees:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  };
