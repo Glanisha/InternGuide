@@ -79,6 +79,7 @@ export const getAllInternships = async (req, res) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+  
   export const applyForInternship = async (req, res) => {
     try {
       console.log("Incoming request to apply for internship");
