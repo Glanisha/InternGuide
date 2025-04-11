@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const StudentReport = () => {
@@ -6,6 +6,25 @@ const StudentReport = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [studentName, setStudentName] = useState('');
+
+  // Load saved report on component mount
+  useEffect(() => {
+    const savedReport = localStorage.getItem('studentReport');
+    if (savedReport) {
+      try {
+        const { report, studentName, timestamp } = JSON.parse(savedReport);
+        // Only use if less than 1 hour old (optional)
+        if (Date.now() - timestamp < 3600000) {
+          setReport(report);
+          setStudentName(studentName);
+        } else {
+          localStorage.removeItem('studentReport');
+        }
+      } catch (e) {
+        console.error('Failed to parse saved report', e);
+      }
+    }
+  }, []);
 
   const generateReport = async () => {
     try {
@@ -23,8 +42,18 @@ const StudentReport = () => {
         }
       );
 
-      setReport(response.data.report);
-      setStudentName(response.data.studentName);
+      const reportData = {
+        report: response.data.report,
+        studentName: response.data.studentName,
+        timestamp: Date.now()
+      };
+
+      setReport(reportData.report);
+      setStudentName(reportData.studentName);
+      
+      // Save to localStorage
+      localStorage.setItem('studentReport', JSON.stringify(reportData));
+      
       setLoading(false);
     } catch (err) {
       console.error('Failed to generate report:', err);
@@ -33,11 +62,16 @@ const StudentReport = () => {
     }
   };
 
+  const clearReport = () => {
+    setReport(null);
+    setStudentName('');
+    localStorage.removeItem('studentReport');
+  };
+
   const downloadPDF = () => {
     const content = document.getElementById('report-content');
     if (!content) return;
 
-    // Create a new window with the report content
     const printWindow = window.open('', '', 'width=800,height=600');
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -102,7 +136,6 @@ const StudentReport = () => {
             <p>Last updated: ${new Date().toLocaleString()}</p>
           </div>
           <script>
-            // Print the page after loading
             window.onload = function() {
               setTimeout(function() {
                 window.print();
@@ -119,22 +152,19 @@ const StudentReport = () => {
   const cleanReportText = (text) => {
     if (!text) return '';
     
-    // Remove markdown formatting
     return text
-      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold **
-      .replace(/\#\#\# (.*?)\n/g, '$1\n') // Remove ### headings
-      .replace(/\#\# (.*?)\n/g, '$1\n') // Remove ## headings
-      .replace(/\n\s*\n/g, '\n\n'); // Clean up extra newlines
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\#\#\# (.*?)\n/g, '$1\n')
+      .replace(/\#\# (.*?)\n/g, '$1\n')
+      .replace(/\n\s*\n/g, '\n\n');
   };
 
   const formatReportForPDF = (text) => {
     const cleanedText = cleanReportText(text);
     
-    // Split into sections and format for PDF
     const sections = cleanedText.split('\n\n').filter(section => section.trim() !== '');
     
     return sections.map((section, index) => {
-      // Check if section looks like a title (first line is all caps or has colon)
       const firstLine = section.split('\n')[0];
       const isSectionTitle = firstLine === firstLine.toUpperCase() || firstLine.endsWith(':');
       
@@ -185,17 +215,26 @@ const StudentReport = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Student Report</h2>
         <div className="flex gap-4">
-          <button
-            onClick={generateReport}
-            disabled={loading}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              loading
-                ? 'bg-blue-400/50 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            {loading ? 'Generating...' : 'Generate Report'}
-          </button>
+          {!report ? (
+            <button
+              onClick={generateReport}
+              disabled={loading}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                loading
+                  ? 'bg-blue-400/50 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
+            >
+              {loading ? 'Generating...' : 'Generate Report'}
+            </button>
+          ) : (
+            <button
+              onClick={clearReport}
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-all"
+            >
+              Clear Report
+            </button>
+          )}
           {report && (
             <button
               onClick={downloadPDF}
