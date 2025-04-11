@@ -70,22 +70,6 @@ export const getFeedback = async (req, res) => {
   }
 };
 
-export const generateReport = async (req, res) => {
-  try {
-    const student = await Student.findOne({ userId: req.user._id });
-    res.status(200).json({
-      name: student.name,
-      email: student.email,
-      department: student.department,
-      internships: student.appliedInternships.length,
-      progress: student.progress,
-      feedback: student.feedback,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
 export const updateStudentProfile = async (req, res) => {
   try {
     // console.log("Decoded JWT user:", req.user);

@@ -1,9 +1,10 @@
 import React from 'react'
+import StudentReport from './StudentReport'
 
 const ReportPage = () => {
   return (
     <div>
-      report
+     <StudentReport/>
     </div>
   )
 }

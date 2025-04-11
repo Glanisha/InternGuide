@@ -6,7 +6,6 @@ import {
   getMentor,
   trackProgress,
   getFeedback,
-  generateReport,
   updateStudentProfile,
   sendMessage,
   getChatHistory,
@@ -23,12 +22,11 @@ router.get("/applications", trackApplication);
 router.get("/mentordetails", getMentorDetails);
 router.get("/progress", trackProgress);
 router.get("/feedback", getFeedback);
-router.get("/report", generateReport);
 router.post("/sendMessage", sendMessage);
 router.get("/chat", getChatHistory); 
 router.get("/best-internship", protect, findBestInternship);
 router.put("/update", protect, updateStudentProfile); 
-router.get("/report/:studentId",  protect, generateStudentReport);
+router.get("/report",  protect, generateStudentReport);
 
 
 export default router;

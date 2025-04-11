@@ -3,6 +3,7 @@ import InternshipCard from './InternshipCard';
 import axios from 'axios';
 import { getBestInternshipRoute } from '../../utils';
 import StudentMentorView from './StudentMentorView';
+import StudentReport from './StudentReport';
 
 const Dashboard = () => {
   const [recommendedInternships, setRecommendedInternships] = useState([]);
