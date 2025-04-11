@@ -11,7 +11,7 @@ import {
   sendMessage,
   getChatHistory,
   findBestInternship,
-  generateStudentReport
+  generateStudentReport, getMentorDetails
 } from "../controllers/student.controller.js";
 import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
 
@@ -20,7 +20,7 @@ const router = express.Router();
 router.use(protect, authorizeRoles("student"));
 router.post("/apply/:id", applyForInternship);
 router.get("/applications", trackApplication);
-router.get("/mentor", getMentor);
+router.get("/mentordetails", getMentorDetails);
 router.get("/progress", trackProgress);
 router.get("/feedback", getFeedback);
 router.get("/report", generateReport);

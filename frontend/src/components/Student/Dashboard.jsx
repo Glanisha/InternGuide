@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import InternshipCard from './InternshipCard';
 import axios from 'axios';
 import { getBestInternshipRoute } from '../../utils';
+import StudentMentorView from './StudentMentorView';
 
 const Dashboard = () => {
   const [recommendedInternships, setRecommendedInternships] = useState([]);
@@ -66,18 +67,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-        <h3 className="text-lg font-medium mb-4">Recommended Internships</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recommendedInternships.slice(0, 3).map((internship) => (
-            <InternshipCard 
-              key={internship._id} 
-              internship={internship} 
-              onApply={applyForInternship}
-            />
-          ))}
-        </div>
-      </div>
+     <StudentMentorView/>
     </div>
   );
 };

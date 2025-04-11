@@ -1,6 +1,7 @@
 import Internship from "../models/internship.model.js";
 import Student from "../models/student.model.js";
 import Chat from "../models/chat.model.js";
+import Faculty from "../models/faculty.model.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -310,6 +311,39 @@ export const generateStudentReport = async (req, res) => {
     });
   } catch (error) {
     console.error("Error generating report:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getMentorDetails = async (req, res) => {
+  try {
+    const studentId = req.user.id; // Assuming user ID is stored in req.user from auth middleware
+
+    // Find the student to get their assigned mentor
+    const student = await Student.findOne({ userId: studentId }).populate('assignedMentor');
+    
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    if (!student.assignedMentor) {
+      return res.status(404).json({ message: "No mentor assigned" });
+    }
+
+    // Get the full mentor details
+    const mentor = await Faculty.findById(student.assignedMentor._id);
+
+    if (!mentor) {
+      return res.status(404).json({ message: "Mentor not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      mentor
+    });
+
+  } catch (error) {
+    console.error("Error fetching mentor details:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
