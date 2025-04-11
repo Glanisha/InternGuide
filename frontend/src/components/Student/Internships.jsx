@@ -13,6 +13,12 @@ const Internships = () => {
   const [selectedInternship, setSelectedInternship] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Additional filter options
+  const [departmentFilter, setDepartmentFilter] = useState('');
+  const [sdgFilter, setSdgFilter] = useState('');
+  const [programOutcomesFilter, setProgramOutcomesFilter] = useState('');
+  const [educationalObjectivesFilter, setEducationalObjectivesFilter] = useState('');
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -75,47 +81,93 @@ const Internships = () => {
 
   const filteredInternships = (showRecommended ? recommendedInternships : internships).filter(
     (internship) => {
-      if (!searchTerm.trim()) return true;
-  
-      const term = searchTerm.toLowerCase();
-  
-      const matches = (field) =>
-        typeof field === 'string'
-          ? field.toLowerCase().includes(term)
-          : Array.isArray(field)
-          ? field.some((item) => item.toLowerCase().includes(term))
-          : false;
-  
-      switch (filter) {
-        case 'title':
-          return matches(internship.title);
-        case 'company':
-          return matches(internship.company);
-        case 'skillsRequired':
-          return matches(internship.skillsRequired);
-        case 'location':
-          return matches(internship.location);
-        case 'stipend':
-          return matches(String(internship.stipend));
-        case 'duration':
-          return matches(internship.duration);
-        case 'description':
-          return matches(internship.description);
-        case 'all':
-        default:
-          return (
-            matches(internship.title) ||
-            matches(internship.company) ||
-            matches(internship.skillsRequired) ||
-            matches(internship.location) ||
-            matches(String(internship.stipend)) ||
-            matches(internship.duration) ||
-            matches(internship.description)
-          );
+      // Search term filtering
+      const term = searchTerm.toLowerCase().trim();
+      const matchesSearchTerm = (field) => {
+        if (!field) return false;
+        if (Array.isArray(field)) {
+          return field.some(item => String(item).toLowerCase().includes(term));
+        }
+        return String(field).toLowerCase().includes(term);
+      };
+
+      // Filter by selected criteria
+      let matchesFilter = true;
+      if (term) {
+        switch (filter) {
+          case 'title':
+            matchesFilter = matchesSearchTerm(internship.title);
+            break;
+          case 'company':
+            matchesFilter = matchesSearchTerm(internship.company);
+            break;
+          case 'skillsRequired':
+            matchesFilter = matchesSearchTerm(internship.skillsRequired);
+            break;
+          case 'location':
+            matchesFilter = matchesSearchTerm(internship.location);
+            break;
+          case 'stipend':
+            matchesFilter = matchesSearchTerm(internship.stipend);
+            break;
+          case 'duration':
+            matchesFilter = matchesSearchTerm(internship.duration);
+            break;
+          case 'description':
+            matchesFilter = matchesSearchTerm(internship.description);
+            break;
+          case 'department':
+            matchesFilter = matchesSearchTerm(internship.department);
+            break;
+          case 'sdgGoals':
+            matchesFilter = matchesSearchTerm(internship.sdgGoals);
+            break;
+          case 'programOutcomes':
+            matchesFilter = matchesSearchTerm(internship.programOutcomes);
+            break;
+          case 'educationalObjectives':
+            matchesFilter = matchesSearchTerm(internship.educationalObjectives);
+            break;
+          case 'all':
+          default:
+            matchesFilter = (
+              matchesSearchTerm(internship.title) ||
+              matchesSearchTerm(internship.company) ||
+              matchesSearchTerm(internship.skillsRequired) ||
+              matchesSearchTerm(internship.location) ||
+              matchesSearchTerm(internship.stipend) ||
+              matchesSearchTerm(internship.duration) ||
+              matchesSearchTerm(internship.description) ||
+              matchesSearchTerm(internship.department) ||
+              matchesSearchTerm(internship.sdgGoals) ||
+              matchesSearchTerm(internship.programOutcomes) ||
+              matchesSearchTerm(internship.educationalObjectives)
+            );
+        }
       }
+
+      // Additional filters
+      const matchesDepartment = departmentFilter ? 
+        String(internship.department).toLowerCase().includes(departmentFilter.toLowerCase()) : true;
+      
+      const matchesSdg = sdgFilter ? 
+        (Array.isArray(internship.sdgGoals) ? 
+          internship.sdgGoals.some(sdg => String(sdg).toLowerCase().includes(sdgFilter.toLowerCase())) :
+          String(internship.sdgGoals).toLowerCase().includes(sdgFilter.toLowerCase())) : true;
+      
+      const matchesProgramOutcomes = programOutcomesFilter ? 
+        (Array.isArray(internship.programOutcomes) ? 
+          internship.programOutcomes.some(po => String(po).toLowerCase().includes(programOutcomesFilter.toLowerCase())) :
+          String(internship.programOutcomes).toLowerCase().includes(programOutcomesFilter.toLowerCase())) : true;
+      
+      const matchesEducationalObjectives = educationalObjectivesFilter ? 
+        (Array.isArray(internship.educationalObjectives) ? 
+          internship.educationalObjectives.some(eo => String(eo).toLowerCase().includes(educationalObjectivesFilter.toLowerCase())) :
+          String(internship.educationalObjectives).toLowerCase().includes(educationalObjectivesFilter.toLowerCase())) : true;
+
+      return matchesFilter && matchesDepartment && matchesSdg && matchesProgramOutcomes && matchesEducationalObjectives;
     }
   );
-  
 
   return (
     <div>
@@ -133,37 +185,86 @@ const Internships = () => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 mb-6 rounded-lg bg-neutral-900/50 border border-white/10">
-  {showRecommended ? (
-    <h3 className="text-lg font-medium text-white">Recommended For You</h3>
-  ) : (
-    <h3 className="text-lg font-medium text-white">All Internships</h3>
-  )}
+      <div className="mb-6 p-4 rounded-lg bg-neutral-900/50 border border-white/10">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
+          {showRecommended ? (
+            <h3 className="text-lg font-medium text-white">Recommended For You</h3>
+          ) : (
+            <h3 className="text-lg font-medium text-white">All Internships</h3>
+          )}
 
-  <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-    <input
-      type="text"
-      placeholder="Search internships..."
-      className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-    />
-    <select
-      className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      value={filter}
-      onChange={(e) => setFilter(e.target.value)}
-    >
-      <option value="all">All</option>
-      <option value="title">Title</option>
-      <option value="company">Company</option>
-      <option value="skillsRequired">Skills</option>
-      <option value="location">Location</option>
-      <option value="stipend">Stipend</option>
-      <option value="duration">Duration</option>
-    </select>
-  </div>
-</div>
+          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+            <input
+              type="text"
+              placeholder="Search internships..."
+              className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <select
+              className="px-4 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All Fields</option>
+              <option value="title">Title</option>
+              <option value="company">Company</option>
+              <option value="skillsRequired">Skills</option>
+              <option value="location">Location</option>
+              <option value="stipend">Stipend</option>
+              <option value="duration">Duration</option>
+              <option value="description">Description</option>
+              <option value="department">Department</option>
+              <option value="sdgGoals">SDG Goals</option>
+              <option value="programOutcomes">Program Outcomes</option>
+              <option value="educationalObjectives">Educational Objectives</option>
+            </select>
+          </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Department</label>
+            <input
+              type="text"
+              placeholder="Filter by department"
+              className="w-full px-3 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">SDG Goals</label>
+            <input
+              type="text"
+              placeholder="Filter by SDG Goals"
+              className="w-full px-3 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={sdgFilter}
+              onChange={(e) => setSdgFilter(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Program Outcomes</label>
+            <input
+              type="text"
+              placeholder="Filter by Program Outcomes"
+              className="w-full px-3 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={programOutcomesFilter}
+              onChange={(e) => setProgramOutcomesFilter(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Educational Objectives</label>
+            <input
+              type="text"
+              placeholder="Filter by Educational Objectives"
+              className="w-full px-3 py-2 rounded text-white bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={educationalObjectivesFilter}
+              onChange={(e) => setEducationalObjectivesFilter(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
 
       {loading ? (
         <p className="text-white">Loading internships...</p>
@@ -178,12 +279,11 @@ const Internships = () => {
               />
             ))
           ) : (
-            <p className="text-white">No internships found.</p>
+            <p className="text-white">No internships found matching your criteria.</p>
           )}
         </div>
       )}
 
-      {/* Modal */}
       <ApplicationFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
