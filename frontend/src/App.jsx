@@ -14,6 +14,10 @@ import Schedule from './components/student/Schedule';
 import Messages from './components/student/Messages';
 import Settings from './components/student/Settings';
 import ReportPage from './components/student/ReportPage';
+
+import InternshipForm from './components/Admin/InternshipForm';
+import MentorAssignment from './components/Admin/MentorAssignment';
+
 import FacultyMentees from './components/Faculty/FacultyMentees';
 
 
@@ -43,7 +47,15 @@ const App = () => {
   </Route>
 
 
-        <Route path="/admin-dashboard" element={<AdminDashboard/>} />
+        {/* <Route path="/admin-dashboard" element={<AdminDashboard/>} /> */}
+        <Route path="/admin-dashboard/*" element={<AdminDashboard />}>
+        <Route index element={<Dashboard />} />
+        <Route path="internships" element={<Internships />} />
+        <Route path="create" element={<InternshipForm />} />
+        <Route path="mentors" element={<MentorAssignment />} />
+        <Route path="settings" element={<Settings />} />
+      </Route>
+        
         <Route path="/management-dashboard" element={<h1> Managemnt dashboard</h1>} />
         
         <Route path="/" element={<LandingPage />} />
