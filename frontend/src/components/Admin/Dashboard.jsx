@@ -1,14 +1,19 @@
 // src/components/admin/Dashboard.jsx
-import { FiPlus, FiUsers, FiBriefcase } from 'react-icons/fi';
+import { FiPlus, FiUsers, FiBriefcase, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import StatsCard from './StatsCard';
 
 export default function Dashboard({ 
-  stats, 
-  setCurrentTab, 
-  filteredInternships, 
-  loading, 
-  handleEdit, 
-  handleDelete 
+  stats = {
+    totalStudents: 0,
+    totalMentors: 0,
+    activeInternships: 0,
+    ongoingInternships: 0
+  }, 
+  setCurrentTab = () => {}, 
+  filteredInternships = [], 
+  loading = false, 
+  handleEdit = () => {}, 
+  handleDelete = () => {} 
 }) {
   return (
     <>
@@ -59,7 +64,7 @@ export default function Dashboard({
         
         {loading ? (
           <div className="text-center py-8 text-neutral-400">Loading internships...</div>
-        ) : (
+        ) : filteredInternships.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-white/10">
               <thead className="bg-neutral-800/50">
@@ -78,7 +83,9 @@ export default function Dashboard({
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-200">{internship.title}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.company}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.department}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.applicationDeadline}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">
+                      {new Date(internship.applicationDeadline).toLocaleDateString()}
+                    </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.internshipDuration}</td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex space-x-2">
@@ -101,6 +108,8 @@ export default function Dashboard({
               </tbody>
             </table>
           </div>
+        ) : (
+          <div className="text-center py-8 text-neutral-400">No internships found</div>
         )}
       </div>
     </>
