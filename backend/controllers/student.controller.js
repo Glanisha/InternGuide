@@ -71,6 +71,31 @@ export const getFeedback = async (req, res) => {
   }
 };
 
+// controllers/student.controller.js
+
+// Add this new controller function
+export const getCurrentStudent = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(400).json({ error: "User ID missing in request" });
+    }
+
+    const student = await Student.findOne({ userId })
+      .populate('assignedMentor', 'name email department designation')
+      .populate('appliedInternships.internship', 'title company applicationDeadline');
+
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    res.status(200).json(student);
+  } catch (error) {
+    console.error("Error fetching student profile:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 
 export const updateStudentProfile = async (req, res) => {
   try {

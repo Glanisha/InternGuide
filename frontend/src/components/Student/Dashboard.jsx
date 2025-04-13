@@ -4,10 +4,13 @@ import axios from 'axios';
 import { getBestInternshipRoute } from '../../utils';
 import StudentMentorView from './StudentMentorView';
 import StudentReport from './StudentReport';
+import StudentProfile from './StudentProfile';
+import UpdateProfile from './UpdateProfile';
 
 const Dashboard = () => {
   const [recommendedInternships, setRecommendedInternships] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showUpdateProfile, setShowUpdateProfile] = useState(false);
 
   useEffect(() => {
     const fetchRecommendedInternships = async () => {
@@ -50,6 +53,10 @@ const Dashboard = () => {
     }
   };
 
+  const toggleUpdateProfile = () => {
+    setShowUpdateProfile(!showUpdateProfile);
+  };
+
   if (loading) return <p className="text-white">Loading...</p>;
 
   return (
@@ -68,7 +75,18 @@ const Dashboard = () => {
         </div>
       </div>
 
- 
+      <StudentProfile />
+      
+      {/* Add Update Profile button */}
+      <button 
+        onClick={toggleUpdateProfile}
+        className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg mb-6 transition-colors"
+      >
+        {showUpdateProfile ? 'Hide Update Form' : 'Update Profile'}
+      </button>
+      
+      {/* Conditionally render UpdateProfile */}
+      {showUpdateProfile && <UpdateProfile />}
     </div>
   );
 };
