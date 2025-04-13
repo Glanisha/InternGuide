@@ -22,6 +22,7 @@ import MentorAssignment from "./components/Admin/MentorAssignment";
 import AdminSettings from "./components/Admin/Settings"; // Renamed to avoid conflict
 
 import FacultyMentees from "./components/Faculty/FacultyMentees";
+import MenteeAnalysis from "./components/Faculty/MenteeAnalysis";
 
 const App = () => {
   return (
@@ -43,6 +44,7 @@ const App = () => {
           
           <Route path="/faculty" element={<FacultyDashboard />}>
             <Route path="mentees" element={<FacultyMentees />} />
+            <Route path="analytics" element={<MenteeAnalysis />} />
           </Route>
 
           {/* Admin routes */}

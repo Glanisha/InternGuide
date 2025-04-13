@@ -69,14 +69,14 @@ const FacultySidebar = ({ isMobileOpen, closeMobileSidebar }) => {
             <span>Messages</span>
           </NavLink>
           <NavLink
-            to="/faculty/settings"
+            to="/faculty/analytics"
             onClick={closeMobileSidebar}
             className={({ isActive }) => 
               `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
             }
           >
             <FiSettings size={20} />
-            <span>Settings</span>
+            <span>Analytics</span>
           </NavLink>
         </nav>
       </div>

@@ -135,25 +135,37 @@ export const getFacultyAnalytics = async (req, res) => {
     };
 
     // Prepare prompt for Gemini
-    const prompt = `
-      Analyze the following faculty mentee internship data and provide insights on:
-      1. Comparative performance of mentees in their internships
-      2. Status updates and progress tracking
-      3. SDG/PO/PEO alignment of internships
-      4. Success rates and academic alignment
-      5. Any notable patterns or outliers
-      
-      Return the analysis in JSON format with these sections:
-      - comparative_performance (array comparing students)
-      - status_progress_analysis (text analysis)
-      - alignment_analysis (SDG/PO/PEO alignment)
-      - success_metrics (quantitative metrics)
-      - recommendations (suggestions for improvement)
-      
-      Data to analyze:
-      ${JSON.stringify(analysisData, null, 2)}
-    `;
+   // Updated prompt in the controller
+const prompt = `
+Analyze the following faculty mentee internship data and provide insights ONLY on:
+1. Comparative performance of mentees in their internships (based on available data)
+2. Status updates and progress tracking (only for internships with data)
+3. SDG/PO/PEO alignment (only for internships where these fields exist)
+4. Success rates and academic alignment (based on available metrics)
+5. Any notable patterns or outliers in the existing data
+6. Provide a mentor impact score based on the success of students 
+7. Recommendations for the faculty to improve student internship outcomes
+8. Give personalised insight on each mentee that helps faculty understand their performance better
+9. Provide a summary of the overall performance of the faculty's mentees  
 
+Important Rules:
+- ONLY analyze fields that contain actual data (ignore empty arrays or "Unknown" values)
+- NEVER suggest improving data collection or mention missing data
+- Focus exclusively on analyzing what's present
+- If a field is empty/unknown, don't draw conclusions from it
+- For "Unknown" company/title, simply ignore those internships in analysis
+- Do not metion any imporvemnt based on internship data collection as that doesnt influence our student
+
+Return the analysis in JSON format with these sections:
+- comparative_performance (array comparing students with actual data)
+- status_progress_analysis (only for internships with known status)
+- alignment_analysis (only for internships with SDG/PO/PEO data)
+- success_metrics (only calculable metrics)
+- recommendations (only actionable items based on existing data)
+
+Data to analyze:
+${JSON.stringify(analysisData, null, 2)}
+`;
     // Construct the API URL with API key as query parameter
     const apiUrl = new URL(process.env.GEMINI_API_URL);
     apiUrl.searchParams.append('key', process.env.GEMINI_API_KEY);
