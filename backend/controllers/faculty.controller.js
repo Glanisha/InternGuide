@@ -6,6 +6,33 @@ import Internship from "../models/internship.model.js";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_API_URL = process.env.GEMINI_API_URL;
 
+// Get faculty profile
+export const getFacultyProfile = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(400).json({ message: "User ID missing in request" });
+    }
+
+    const faculty = await Faculty.findOne({ userId })
+      .populate('assignedStudents', 'name email department cgpa')
+      .populate('internshipsSupervised.internship', 'title company status')
+      .populate('internshipsSupervised.students', 'name email')
+      .populate('evaluations.student', 'name email');
+
+    if (!faculty) {
+      return res.status(404).json({ message: "Faculty profile not found" });
+    }
+
+    res.status(200).json({ faculty });
+  } catch (error) {
+    console.error("Error fetching faculty profile:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
 export const updateFacultyProfile = async (req, res) => {
     try {
         const userId = req.user?.id;

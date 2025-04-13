@@ -23,6 +23,7 @@ import AdminSettings from "./components/Admin/Settings"; // Renamed to avoid con
 
 import FacultyMentees from "./components/Faculty/FacultyMentees";
 import MenteeAnalysis from "./components/Faculty/MenteeAnalysis";
+import FacultyProfile from "./components/Faculty/FacultyProfile";
 
 const App = () => {
   return (
@@ -44,6 +45,7 @@ const App = () => {
           
           <Route path="/faculty" element={<FacultyDashboard />}>
             <Route path="mentees" element={<FacultyMentees />} />
+            <Route path="dashboard" element={<FacultyProfile/>} />
             <Route path="analytics" element={<MenteeAnalysis />} />
           </Route>
 
