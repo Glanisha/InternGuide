@@ -23,10 +23,21 @@ ChartJS.register(
   ArcElement
 );
 
+// Cache key
+const CACHE_KEY = 'menteeAnalysisData';
+const CACHE_EXPIRY_HOURS = 5;
+
 const MenteeAnalysis = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Function to check if cached data is still valid
+  const isCacheValid = (cachedData) => {
+    if (!cachedData || !cachedData.timestamp) return false;
+    const cacheAge = (Date.now() - cachedData.timestamp) / (1000 * 60 * 60);
+    return cacheAge < CACHE_EXPIRY_HOURS;
+  };
 
   // Function to parse the analysis string
   const parseAnalysis = (analysisString) => {
@@ -44,14 +55,32 @@ const MenteeAnalysis = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Check if valid cached data exists
+        const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
+        if (cachedData && isCacheValid(cachedData)) {
+          setData(cachedData.data);
+          setLoading(false);
+          return;
+        }
+
+        // If no valid cache, make API call
         const response = await axios.get('http://localhost:8000/api/faculty/analytics', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             'Content-Type': 'application/json'
           }
         });
+        
+        // Update state
         setData(response.data);
         setLoading(false);
+        
+        // Cache the new data with timestamp
+        const dataToCache = {
+          data: response.data,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(dataToCache));
       } catch (error) {
         console.error('Error fetching analytics:', error);
         setError('Failed to fetch data');
@@ -61,6 +90,11 @@ const MenteeAnalysis = () => {
 
     fetchData();
   }, []);
+
+  // Clear cache function (optional - can be exposed via UI if needed)
+  const clearCache = () => {
+    localStorage.removeItem(CACHE_KEY);
+  };
 
   if (loading) return <div className="text-center p-10 text-xl text-white">Loading analysis...</div>;
   if (error) return <div className="text-center p-10 text-xl text-red-400">{error}</div>;
