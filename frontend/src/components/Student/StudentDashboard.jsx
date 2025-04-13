@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { FiMenu, FiX, FiUser, FiHome, FiCalendar, FiMessageSquare, FiSettings, FiBriefcase } from 'react-icons/fi';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { FiMenu, FiX, FiUser, FiHome, FiMessageSquare, FiSettings, FiBriefcase, FiUsers, FiFileText } from 'react-icons/fi';
 
 const StudentDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/');
+  };
 
   return (
     <div className="flex h-screen bg-black text-white overflow-hidden">
@@ -29,49 +35,69 @@ const StudentDashboard = () => {
           </button>
         </div>
 
-        <nav className="p-4 space-y-2">
-          <a
-            href="/student/dashboard"
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${location.pathname === '/student/dashboard' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
-          >
-            <FiHome size={20} />
-            <span>Dashboard</span>
-          </a>
-          <a
-            href="/student/internships"
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${location.pathname === '/student/internships' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
-          >
-            <FiBriefcase size={20} />
-            <span>Internships</span>
-          </a>
-          <a
-            href="/student/profile"
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${location.pathname === '/student/profile' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
-          >
-            <FiUser size={20} />
-            <span>My Profile</span>
-          </a>
-          <a
-            href="/student/schedule"
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${location.pathname === '/student/schedule' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
-          >
-            <FiCalendar size={20} />
-            <span>Schedule</span>
-          </a>
-          <a
-            href="/student/messages"
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${location.pathname === '/student/messages' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
-          >
-            <FiMessageSquare size={20} />
-            <span>Messages</span>
-          </a>
-          <a
-            href="/student/generate-report"
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${location.pathname === '/student/settings' ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`}
+        <nav className="p-4 flex flex-col h-[calc(100%-120px)]">
+          <div className="space-y-2 flex-1">
+            <NavLink
+              to="/student/dashboard"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) => 
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiHome size={20} />
+              <span>Dashboard</span>
+            </NavLink>
+            <NavLink
+              to="/student/internships"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) => 
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiBriefcase size={20} />
+              <span>Internships</span>
+            </NavLink>
+           
+            <NavLink
+              to="/student/messages"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) => 
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiMessageSquare size={20} />
+              <span>Messages</span>
+            </NavLink>
+            <NavLink
+              to="/student/mentor"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) => 
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiUsers size={20} />
+              <span>Mentor</span>
+            </NavLink>
+            <NavLink
+              to="/student/generate-report"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) => 
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiFileText size={20} />
+              <span>Report</span>
+            </NavLink>
+          </div>
+
+          {/* Logout button */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-neutral-300 hover:bg-red-500/20 hover:text-red-400 transition-all mt-auto"
           >
             <FiSettings size={20} />
-            <span>Report</span>
-          </a>
+            <span>Logout</span>
+          </button>
         </nav>
       </div>
 

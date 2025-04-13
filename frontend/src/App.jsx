@@ -9,7 +9,6 @@ import StudentDashboard from "./components/Student/StudentDashboard";
 import Dashboard from "./components/student/Dashboard";
 import Internships from "./components/student/Internships";
 import Profile from "./components/student/Profile";
-import Schedule from "./components/student/Schedule";
 import Messages from "./components/student/Messages";
 import Settings from "./components/student/Settings";
 import ReportPage from "./components/student/ReportPage";
@@ -24,6 +23,7 @@ import AdminSettings from "./components/Admin/Settings"; // Renamed to avoid con
 import FacultyMentees from "./components/Faculty/FacultyMentees";
 import MenteeAnalysis from "./components/Faculty/MenteeAnalysis";
 import FacultyProfile from "./components/Faculty/FacultyProfile";
+import MentorPage from "./components/student/MentorPage";
 
 const App = () => {
   return (
@@ -37,9 +37,9 @@ const App = () => {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="internships" element={<Internships />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="schedule" element={<Schedule />} />
             <Route path="messages" element={<Messages />} />
             <Route path="generate-report" element={<ReportPage />} />
+            <Route path="mentor" element={<MentorPage/>} />
             <Route index element={<Dashboard />} />
           </Route>
           

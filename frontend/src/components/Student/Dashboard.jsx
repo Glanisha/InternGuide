@@ -68,7 +68,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-     <StudentMentorView/>
+ 
     </div>
   );
 };
