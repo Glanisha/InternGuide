@@ -1,8 +1,16 @@
-import { FiX, FiUsers, FiHome, FiCalendar, FiMessageSquare, FiSettings } from 'react-icons/fi';
-import { NavLink } from 'react-router-dom';
+import { FiX, FiUsers, FiHome, FiCalendar, FiMessageSquare, FiSettings, FiLogOut } from 'react-icons/fi';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 const FacultySidebar = ({ isMobileOpen, closeMobileSidebar }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    closeMobileSidebar();
+    navigate('/');
+  };
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -27,48 +35,58 @@ const FacultySidebar = ({ isMobileOpen, closeMobileSidebar }) => {
           </button>
         </div>
 
-        <nav className="p-4 space-y-2">
-          <NavLink
-            to="/faculty/dashboard"
-            onClick={closeMobileSidebar}
-            className={({ isActive }) => 
-              `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
-            }
+        <nav className="p-4 flex flex-col h-[calc(100%-120px)]">
+          <div className="space-y-2 flex-1">
+            <NavLink
+              to="/faculty/dashboard"
+              onClick={closeMobileSidebar}
+              className={({ isActive }) => 
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiHome size={20} />
+              <span>Dashboard</span>
+            </NavLink>
+            <NavLink
+              to="/faculty/mentees"
+              onClick={closeMobileSidebar}
+              className={({ isActive }) => 
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiUsers size={20} />
+              <span>My Mentees</span>
+            </NavLink>
+            <NavLink
+              to="/faculty/messages"
+              onClick={closeMobileSidebar}
+              className={({ isActive }) => 
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiMessageSquare size={20} />
+              <span>Messages</span>
+            </NavLink>
+            <NavLink
+              to="/faculty/analytics"
+              onClick={closeMobileSidebar}
+              className={({ isActive }) => 
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiSettings size={20} />
+              <span>Analytics</span>
+            </NavLink>
+          </div>
+
+          {/* Logout button at the bottom */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-neutral-300 hover:bg-red-500/20 hover:text-red-400 transition-all mt-auto"
           >
-            <FiHome size={20} />
-            <span>Dashboard</span>
-          </NavLink>
-          <NavLink
-            to="/faculty/mentees"
-            onClick={closeMobileSidebar}
-            className={({ isActive }) => 
-              `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
-            }
-          >
-            <FiUsers size={20} />
-            <span>My Mentees</span>
-          </NavLink>
-         
-          <NavLink
-            to="/faculty/messages"
-            onClick={closeMobileSidebar}
-            className={({ isActive }) => 
-              `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
-            }
-          >
-            <FiMessageSquare size={20} />
-            <span>Messages</span>
-          </NavLink>
-          <NavLink
-            to="/faculty/analytics"
-            onClick={closeMobileSidebar}
-            className={({ isActive }) => 
-              `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
-            }
-          >
-            <FiSettings size={20} />
-            <span>Analytics</span>
-          </NavLink>
+            <FiLogOut size={20} />
+            <span>Logout</span>
+          </button>
         </nav>
       </div>
     </>

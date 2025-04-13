@@ -11,12 +11,10 @@ const FacultyTopBar = ({ toggleSidebar }) => {
       </button>
       <div className="flex items-center space-x-4">
         <div className="text-right hidden sm:block">
-          <p className="text-sm text-neutral-400">Welcome back,</p>
-          <p className="font-medium">Dr. Smith</p>
+          <p className="text-sm text-neutral-400">Welcome back</p>
+         
         </div>
-        <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
-          <span className="text-blue-400 font-medium">JS</span>
-        </div>
+       
       </div>
     </header>
   );
