@@ -2,6 +2,7 @@ import Internship from "../models/internship.model.js";
 import Student from "../models/student.model.js";
 import Chat from "../models/chat.model.js";
 import Faculty from "../models/faculty.model.js";
+import Notification from "../models/notification.model.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -70,28 +71,151 @@ export const getFeedback = async (req, res) => {
   }
 };
 
+
 export const updateStudentProfile = async (req, res) => {
   try {
-    // console.log("Decoded JWT user:", req.user);
-    const userId = req.user?.id;
-    console.log("Searching for Student with userId:", userId);
-
-    if (!userId) {
-      return res.status(400).json({ message: "User ID missing in request" });
+    const studentId = req.user?.id;
+    if (!studentId) {
+      return res.status(400).json({ error: "User ID missing in request" });
     }
-    const student = await Student.findOne({ userId });
 
-    if (!student) {
-      console.log("No student found with this userId");
-      return res.status(404).json({ message: "Student profile not found" });
+    const updates = req.body;
+    const oldStudentData = await Student.findOne({ userId: studentId });
+
+    // Update student profile
+    const updatedStudent = await Student.findOneAndUpdate(
+      { userId: studentId },
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedStudent) {
+      return res.status(404).json({ error: "Student not found" });
     }
-    Object.assign(student, req.body);
-    await student.save();
-    console.log("Student profile updated successfully");
-    res.status(200).json({ message: "Profile updated", student });
+
+    // Check for significant changes that should notify faculty
+    const facultyMentor = updatedStudent.assignedMentor;
+    if (facultyMentor) {
+      const notifications = [];
+
+      // Check for internship status changes
+      if (updates.appliedInternships) {
+        const oldInternships = oldStudentData.appliedInternships || [];
+        const newInternships = updatedStudent.appliedInternships || [];
+        
+        for (let i = 0; i < newInternships.length; i++) {
+          const newInternship = newInternships[i];
+          const oldInternship = oldInternships.find(
+            int => int.internship?.toString() === newInternship.internship?.toString()
+          );
+          
+          if (oldInternship && oldInternship.status !== newInternship.status) {
+            notifications.push({
+              facultyId: facultyMentor,
+              studentId: updatedStudent._id,
+              studentName: updatedStudent.name,
+              message: `Internship status changed to ${newInternship.status} for ${newInternship.internship?.title || 'an internship'}`,
+              type: "internship_status",
+              relatedData: {
+                internshipId: newInternship.internship,
+                oldStatus: oldInternship.status,
+                newStatus: newInternship.status
+              }
+            });
+          }
+        }
+      }
+
+      // Check for new skills
+      if (updates.skills && updates.skills.length > (oldStudentData.skills?.length || 0)) {
+        const newSkills = updates.skills.filter(
+          skill => !oldStudentData.skills?.includes(skill)
+        );
+        
+        if (newSkills.length > 0) {
+          notifications.push({
+            facultyId: facultyMentor,
+            studentId: updatedStudent._id,
+            studentName: updatedStudent.name,
+            message: `Added new skills: ${newSkills.join(', ')}`,
+            type: "skill_added",
+            relatedData: {
+              newSkills: newSkills
+            }
+          });
+        }
+      }
+
+      // Check for new certifications
+      if (updates.certifications && updates.certifications.length > (oldStudentData.certifications?.length || 0)) {
+        const newCerts = updates.certifications.filter(
+          cert => !oldStudentData.certifications?.includes(cert)
+        );
+        
+        if (newCerts.length > 0) {
+          notifications.push({
+            facultyId: facultyMentor,
+            studentId: updatedStudent._id,
+            studentName: updatedStudent.name,
+            message: `Added new certifications: ${newCerts.join(', ')}`,
+            type: "certification_added",
+            relatedData: {
+              newCertifications: newCerts
+            }
+          });
+        }
+      }
+
+      // Check for new achievements
+      if (updates.achievements && updates.achievements.length > (oldStudentData.achievements?.length || 0)) {
+        const newAchievements = updates.achievements.filter(
+          ach => !oldStudentData.achievements?.includes(ach)
+        );
+        
+        if (newAchievements.length > 0) {
+          notifications.push({
+            facultyId: facultyMentor,
+            studentId: updatedStudent._id,
+            studentName: updatedStudent.name,
+            message: `Added new achievements: ${newAchievements.join(', ')}`,
+            type: "achievement_added",
+            relatedData: {
+              newAchievements: newAchievements
+            }
+          });
+        }
+      }
+
+      // General profile updates (if no specific changes detected)
+      if (notifications.length === 0 && Object.keys(updates).length > 0) {
+        const changedFields = Object.keys(updates).filter(
+          field => !['_id', 'createdAt', 'updatedAt', '__v'].includes(field)
+        );
+        
+        if (changedFields.length > 0) {
+          notifications.push({
+            facultyId: facultyMentor,
+            studentId: updatedStudent._id,
+            studentName: updatedStudent.name,
+            message: `Updated profile fields: ${changedFields.join(', ')}`,
+            type: "profile_update",
+            relatedData: {
+              updatedFields: changedFields
+            }
+          });
+        }
+      }
+
+      // Save all notifications
+      if (notifications.length > 0) {
+        await Notification.insertMany(notifications);
+      }
+    }
+
+    res.status(200).json(updatedStudent);
   } catch (error) {
     console.error("Error updating student profile:", error);
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 

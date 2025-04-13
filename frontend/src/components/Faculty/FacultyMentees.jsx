@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Notifications from "./Notifications";
 
 const FacultyMentees = () => {
   const [mentees, setMentees] = useState([]);
@@ -191,6 +192,8 @@ const FacultyMentees = () => {
               Message
             </button>
           </div>
+
+          
         </div>
       ))}
     </div>

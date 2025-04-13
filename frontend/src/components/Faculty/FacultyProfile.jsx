@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Notifications from "./Notifications";
 
 const FacultyProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -202,6 +203,7 @@ const FacultyProfile = () => {
           </div>
         </div>
       </div>
+      <Notifications/>
     </div>
   );
 };

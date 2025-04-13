@@ -1,6 +1,6 @@
 import Faculty from "../models/faculty.model.js";
 import Student from "../models/student.model.js";
-
+import Notification from "../models/notification.model.js";
 import Internship from "../models/internship.model.js";
  
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -253,5 +253,89 @@ ${JSON.stringify(analysisData, null, 2)}
         apiKeyPresent: !!process.env.GEMINI_API_KEY
       }
     });
+  }
+};
+
+
+// Get all notifications for faculty
+export const getNotifications = async (req, res) => {
+  try {
+    const facultyId = req.user?.id;
+    if (!facultyId) {
+      return res.status(400).json({ error: "User ID missing in request" });
+    }
+
+    const faculty = await Faculty.findOne({ userId: facultyId });
+    if (!faculty) {
+      return res.status(404).json({ error: "Faculty not found" });
+    }
+
+    const notifications = await Notification.find({ facultyId: faculty._id })
+      .sort({ createdAt: -1 })
+      .populate('studentId', 'name email department');
+
+    res.status(200).json(notifications);
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Mark a single notification as read
+export const markNotificationAsRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const facultyId = req.user?.id;
+
+    if (!facultyId) {
+      return res.status(400).json({ error: "User ID missing in request" });
+    }
+
+    const faculty = await Faculty.findOne({ userId: facultyId });
+    if (!faculty) {
+      return res.status(404).json({ error: "Faculty not found" });
+    }
+
+    const notification = await Notification.findOneAndUpdate(
+      { _id: id, facultyId: faculty._id },
+      { $set: { isRead: true } },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({ error: "Notification not found" });
+    }
+
+    res.status(200).json(notification);
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Mark all notifications as read
+export const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const facultyId = req.user?.id;
+    if (!facultyId) {
+      return res.status(400).json({ error: "User ID missing in request" });
+    }
+
+    const faculty = await Faculty.findOne({ userId: facultyId });
+    if (!faculty) {
+      return res.status(404).json({ error: "Faculty not found" });
+    }
+
+    const result = await Notification.updateMany(
+      { facultyId: faculty._id, isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    res.status(200).json({
+      message: `Marked ${result.modifiedCount} notifications as read`
+    });
+  } catch (error) {
+    console.error("Error marking all notifications as read:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
