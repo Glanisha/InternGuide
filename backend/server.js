@@ -17,6 +17,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
 import chatRoutes from "./routes/chat.route.js";
+import feedbackRoutes from "./routes/feedback.routes.js";
+
 
 dotenv.config();
 
@@ -118,6 +120,7 @@ app.use("/api/student", studentRoutes);
 app.use("/api/internships", internshipRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 // Start the server
 server.listen(port, () => {
