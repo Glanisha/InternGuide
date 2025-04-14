@@ -5,7 +5,7 @@ const InternshipSchema = new mongoose.Schema(
     title: { type: String, required: true },
     company: { type: String, required: true },
     description: { type: String, required: true },
-    role: { type: String}, 
+    role: { type: String }, 
     requirements: [{ type: String }],
     department: { type: String },
     sdgGoals: [{ type: String }], 
@@ -25,15 +25,14 @@ const InternshipSchema = new mongoose.Schema(
     mode: {
       type: String,
       enum: ["Remote", "Hybrid", "Onsite"], 
-      default: "Remote"  // Fixed default value
+      default: "Remote"
     }, 
     applicationDeadline: { type: Date }, 
     internshipDuration: { type: String },
     stipend: { type: String },
+    assignedMentor: { type: mongoose.Schema.Types.ObjectId, ref: "Mentor", default: null },
   },
   { timestamps: true }
 );
-
-
 const Internship = mongoose.model("Internship", InternshipSchema);
 export default Internship;
