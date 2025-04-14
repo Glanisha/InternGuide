@@ -20,6 +20,7 @@ import chatRoutes from "./routes/chat.route.js";
 import feedbackRoutes from "./routes/feedback.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
 import viewerRoutes from "./routes/viewer.routes.js"
+import managementRoutes from "./routes/management.routes.js";
 
 
 dotenv.config();
@@ -126,6 +127,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/viewers", viewerRoutes);
+app.use('/api/management', managementRoutes);
+
 // Start the server
 server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
