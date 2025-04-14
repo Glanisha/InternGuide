@@ -5,7 +5,7 @@ const MyApplications = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedResume, setSelectedResume] = useState(null);
+  const [selectedApplication, setSelectedApplication] = useState(null); // Changed from selectedResume
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -51,12 +51,13 @@ const MyApplications = () => {
     });
   };
 
-  const handleViewResume = (resumePath) => {
-    // Extract filename from path
-    const filename = resumePath.split('\\').pop();
-    // In a real app, you would fetch the resume file from the server
-    // For now, we'll just show the filename
-    setSelectedResume(filename);
+  const handleViewResume = (application) => {
+    setSelectedApplication(application);
+  };
+
+  const handleViewDetails = (internshipId) => {
+    // You can implement navigation to internship details here
+    console.log('View details for internship:', internshipId);
   };
 
   if (loading) {
@@ -124,14 +125,12 @@ const MyApplications = () => {
           {/* Actions */}
           <div className="flex space-x-3">
             <button
-              onClick={() => handleViewResume(application.resume)}
+              onClick={() => handleViewResume(application)}
               className="px-4 py-2 text-sm bg-white/5 hover:bg-white/10 rounded-lg transition-all"
             >
               View Resume
             </button>
-            <button className="px-4 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all">
-              View Details
-            </button>
+    
           </div>
 
           {/* Cover Letter Preview */}
@@ -145,30 +144,40 @@ const MyApplications = () => {
       ))}
 
       {/* Resume Modal */}
-      {selectedResume && (
+      {selectedApplication && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
           <div className="bg-neutral-900/90 backdrop-blur-sm border border-white/10 rounded-xl max-w-2xl w-full p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-white">Uploaded Resume</h3>
               <button 
-                onClick={() => setSelectedResume(null)}
+                onClick={() => setSelectedApplication(null)}
                 className="text-neutral-400 hover:text-white"
               >
                 ✕
               </button>
             </div>
             <div className="bg-neutral-800/50 border border-dashed border-white/20 rounded-lg p-8 text-center">
-              <p className="text-blue-400 mb-2">{selectedResume}</p>
-              <p className="text-sm text-neutral-400">In a real application, the PDF would be displayed here</p>
-              <div className="mt-4">
+              <p className="text-blue-400 mb-2">
+                {selectedApplication.resume.split('\\').pop()}
+              </p>
+              <p className="text-sm text-neutral-400 mb-4">
+                For: {selectedApplication.internship.title} at {selectedApplication.internship.company}
+              </p>
+              <div className="mt-4 space-x-3">
                 <a 
-                  href={`http://localhost:8000/${application.resume}`} // Adjust this path based on your backend
+                  href={`http://localhost:8000/${selectedApplication.resume.replace(/\\/g, '/')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
                 >
                   Download Resume
                 </a>
+                <button
+                  onClick={() => setSelectedApplication(null)}
+                  className="px-4 py-2 text-sm bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
