@@ -1,6 +1,7 @@
 import Viewer from '../models/viewer.model.js';
 import Internship from '../models/internship.model.js';
 import mongoose from 'mongoose';
+import Request from '../models/request.model.js';
 
 // Get viewer profile
 export const getViewerProfile = async (req, res) => {
@@ -84,21 +85,19 @@ export const removeSavedInternship = async (req, res) => {
   }
 };
 
-// Submit request to admin
 export const submitRequest = async (req, res) => {
   try {
     const { internshipId, message } = req.body;
-    
-    // In a real app, you would create a Request model and save this
-    // For now, we'll just return a success message
-    res.status(200).json({ 
+
+    const newRequest = await Request.create({
+      viewer: req.user.id,
+      internship: internshipId,
+      message,
+    });
+
+    res.status(201).json({
       message: 'Request submitted successfully',
-      data: {
-        internshipId,
-        message,
-        viewerId: req.user.id,
-        status: 'pending'
-      }
+      request: newRequest,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
