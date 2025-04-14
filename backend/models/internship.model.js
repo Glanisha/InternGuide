@@ -12,6 +12,10 @@ const InternshipSchema = new mongoose.Schema(
     programOutcomes: [{ type: String }],
     educationalObjectives: [{ type: String }], 
     applicants: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
+    applications: [{ 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Application" 
+    }],
     status: {
       type: String,
       enum: ["Open", "Closed"],

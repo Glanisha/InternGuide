@@ -6,6 +6,7 @@ import StudentMentorView from './StudentMentorView';
 import StudentReport from './StudentReport';
 import StudentProfile from './StudentProfile';
 import UpdateProfile from './UpdateProfile';
+import MyApplications from './MyApplications';
 
 const Dashboard = () => {
   const [recommendedInternships, setRecommendedInternships] = useState([]);
@@ -35,7 +36,7 @@ const Dashboard = () => {
   }, []);
 
   const applyForInternship = async (internshipId) => {
-    try {
+try {
       const token = localStorage.getItem("token");
       await axios.post(
         `http://localhost:8000/api/student/apply/${internshipId}`,
@@ -76,6 +77,7 @@ const Dashboard = () => {
       </div>
 
       <StudentProfile />
+      <MyApplications/>
       
       {/* Add Update Profile button */}
       <button 

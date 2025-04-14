@@ -1,14 +1,25 @@
 import React from 'react';
+import { useState } from 'react';
+import ApplicationForm from './ApplicationForm'; 
 
-const InternshipCard = ({ internship, onApply }) => {
+
+const InternshipCard = ({ internship}) => {
+
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [applicationSuccess, setApplicationSuccess] = useState(null);
   const formatArray = (arr) =>
     arr && arr.length > 0 ? arr.join(', ') : 'N/A';
 
   const formatDate = (dateStr) =>
     dateStr ? new Date(dateStr).toLocaleDateString() : 'N/A';
 
+  const handleApplySuccess = (response) => {
+    setApplicationSuccess(response);
+    setTimeout(() => setApplicationSuccess(null), 5000); 
+  };
   return (
-    <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:border-blue-500/30 transition-all">
+    <>
+      <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:border-blue-500/30 transition-all">
       {/* Company Logo and Title */}
       <div className="flex items-start mb-3">
         <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
@@ -83,21 +94,39 @@ const InternshipCard = ({ internship, onApply }) => {
 
       {/* Buttons */}
       <div className="mt-4 flex space-x-2">
-        <button 
-          className="flex-1 py-2 text-sm bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-          onClick={() => {}}
-        >
-          Details
-        </button>
-        <button 
-          className="flex-1 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
-          onClick={() => onApply(internship._id)}
-        >
-          Apply
-        </button>
+          <button 
+            className="flex-1 py-2 text-sm bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+            onClick={() => {}}
+          >
+            Details
+          </button>
+          <button 
+            className="flex-1 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
+            onClick={() => setShowApplicationForm(true)}
+          >
+            Apply
+          </button>
+        </div>
       </div>
-    </div>
+
+      {/* Success Notification */}
+      {applicationSuccess && (
+        <div className="fixed bottom-4 right-4 bg-green-900/70 border border-green-500/30 text-green-400 px-4 py-2 rounded-lg shadow-lg z-50">
+          Application submitted successfully!
+        </div>
+      )}
+
+      {/* Application Form Modal */}
+      {showApplicationForm && (
+        <ApplicationForm
+          internship={internship}
+          onClose={() => setShowApplicationForm(false)}
+          onSubmitSuccess={handleApplySuccess}
+        />
+      )}
+    </>
   );
 };
 
 export default InternshipCard;
+

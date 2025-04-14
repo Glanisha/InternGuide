@@ -11,6 +11,7 @@ const StudentSchema = new mongoose.Schema(
       {
         internship: { type: mongoose.Schema.Types.ObjectId, ref: "Internship" },
         status: { type: String, enum: ["Pending", "Accepted", "Rejected"], default: "Pending" },
+        application: { type: mongoose.Schema.Types.ObjectId, ref: "Application" } 
       },
     ],
     assignedMentor: { type: mongoose.Schema.Types.ObjectId, ref: "Faculty" },

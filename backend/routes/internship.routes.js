@@ -6,7 +6,7 @@ import {
   applyForInternship,
   updateApplicationStatus
 } from "../controllers/internship.controller.js";
-import upload from "../middlewares/upload.middleware.js";
+// import upload from "../middlewares/upload.middleware.js";
 
 const router = express.Router();
 
@@ -15,18 +15,18 @@ router.get("/", getAllInternships);
 router.put("/update/:id", protect, authorizeRoles("admin"), updateInternship);
 router.delete("/delete/:id", protect, authorizeRoles("admin"), deleteInternship);
 
-router.post(
-    "/:internshipId/apply",
-    protect,
-    authorizeRoles("student"),
-    upload.single("resume"),
-    applyForInternship
-  );
+// router.post(
+//     "/:internshipId/apply",
+//     protect,
+//     authorizeRoles("student"),
+//     upload.single("resume"),
+//     applyForInternship
+//   );
   
-  router.patch(
-    "/:internshipId/application/:studentId/status",
-    protect,
-    authorizeRoles("admin"),
-    updateApplicationStatus
-  );
+  // router.patch(
+  //   "/:internshipId/application/:studentId/status",
+  //   protect,
+  //   authorizeRoles("admin"),
+  //   updateApplicationStatus
+  // );
 export default router;

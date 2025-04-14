@@ -18,6 +18,7 @@ import { fileURLToPath } from 'url';
 import multer from 'multer';
 import chatRoutes from "./routes/chat.route.js";
 import feedbackRoutes from "./routes/feedback.routes.js";
+import applicationRoutes from "./routes/application.routes.js";
 
 
 dotenv.config();
@@ -30,6 +31,7 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
   origin: "http://localhost:5173", 
   credentials: true,
@@ -121,6 +123,7 @@ app.use("/api/internships", internshipRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api/applications", applicationRoutes);
 
 // Start the server
 server.listen(port, () => {
