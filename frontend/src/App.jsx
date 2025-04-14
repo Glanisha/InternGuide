@@ -12,6 +12,7 @@ import Profile from "./components/student/Profile";
 import Messages from "./components/student/Messages";
 import Settings from "./components/student/Settings";
 import ReportPage from "./components/student/ReportPage";
+import ViewerDashboard from "./components/Viewer/ViewerDashboard";
 
 // Admin components
 import AdminLayout from "./components/Admin/AdminLayout";
@@ -57,6 +58,8 @@ const App = () => {
             <Route path="settings" element={<AdminSettings />} />
           </Route>
         </Route>
+
+        <Route path="/viewer-dashboard" element={<ViewerDashboard/>} />
 
         <Route path="/" element={<LandingPage />} />
       </Routes>

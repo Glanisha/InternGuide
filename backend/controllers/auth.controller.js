@@ -85,71 +85,80 @@ export const register = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-//login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
+      return res.status(400).json({ 
+        success: false,
+        message: "Email and password required" 
+      });
     }
 
-    console.log("Searching for email:", email);
     const user = await User.findOne({ email });
-    console.log("User found:", user);
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ 
+        success: false,
+        message: "User not found" 
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid credentials" 
+      });
     }
 
     let userData;
     switch (user.role.toLowerCase()) {
       case "student":
-        userData = await Student.findOne({ userId: user._id }).select(
-          "-_id department"
-        );
+        userData = await Student.findOne({ userId: user._id });
         break;
       case "faculty":
-        userData = await Faculty.findOne({ userId: user._id }).select(
-          "-_id department"
-        );
+        userData = await Faculty.findOne({ userId: user._id });
         break;
       case "admin":
-        userData = await Admin.findOne({ userId: user._id }).select("-_id");
+        userData = await Admin.findOne({ userId: user._id });
         break;
       case "management":
-        userData = await Management.findOne({ userId: user._id }).select(
-          "-_id reportsGenerated sdgTracking"
-        );
+        userData = await Management.findOne({ userId: user._id });
         break;
       case "viewer":
-        userData = await Viewer.findOne({ userId: user._id }).select("-_id");
+        userData = await Viewer.findOne({ userId: user._id });
         break;
       default:
-        return res.status(400).json({ message: "Invalid role" });
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid role" 
+        });
     }
 
     if (!userData) {
-      return res
-        .status(400)
-        .json({
-          message: "Role-specific data not found. Please contact admin.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Role-specific data not found. Please contact admin."
+      });
     }
 
     const token = generateToken(user);
     res.status(200).json({
+      success: true,
       message: "Login successful",
       token,
       role: user.role,
-      userData,
+      user: {
+        ...user._doc,
+        roleData: userData
+      }
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: "Server error", 
+      error: error.message 
+    });
   }
 };

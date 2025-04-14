@@ -12,27 +12,57 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Clear previous errors
+      setError('');
+      
       const response = await axios.post(loginRoute, {
         email,
         password,
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-      const { token, role } = response.data;
+  
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Login failed');
+      }
+  
+      const { token, role, user } = response.data;
+      
+      if (!token || !role) {
+        throw new Error('Authentication data missing in response');
+      }
+  
+      // Store token and user data
       localStorage.setItem('token', token);
-
-      if (role === 'student') {
-        navigate('/student');
-      } else if (role === 'faculty') {
-        navigate('/faculty');
-      } else if (role === 'admin') {
-        navigate('/admin-dashboard');
-      } else if (role === 'management') {
-        navigate('/management-dashboard');
+      localStorage.setItem('user', JSON.stringify(user));
+  
+      // Navigate based on role
+      switch (role.toLowerCase()) {
+        case 'student':
+          navigate('/student');
+          break;
+        case 'faculty':
+          navigate('/faculty');
+          break;
+        case 'admin':
+          navigate('/admin-dashboard');
+          break;
+        case 'management':
+          navigate('/management-dashboard');
+          break;
+        case 'viewer':
+          navigate('/viewer-dashboard');
+          break;
+        default:
+          navigate('/');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || err.message || 'Login failed');
     }
   };
-
   return (
     <div className="min-h-screen bg-black w-full flex items-center justify-center p-4">
       {/* Glass effect container */}
