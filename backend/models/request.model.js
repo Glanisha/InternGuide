@@ -1,30 +1,26 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const requestSchema = new mongoose.Schema({
-  viewer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Viewer',
-    required: true,
+const RequestSchema = new mongoose.Schema(
+  {
+    viewerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Viewer",
+      required: true,
+    },
+    internshipId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Internship",
+      required: true,
+    },
+    message: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
   },
-  internship: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Internship',
-    required: true,
-  },
-  message: {
-    type: String,
-    required: true,
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'pending',
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  }
-});
+  { timestamps: true }
+);
 
-const Request = mongoose.model('Request', requestSchema);
+const Request = mongoose.model("Request", RequestSchema);
 export default Request;

@@ -85,20 +85,34 @@ export const removeSavedInternship = async (req, res) => {
   }
 };
 
+//Submit Request
 export const submitRequest = async (req, res) => {
   try {
     const { internshipId, message } = req.body;
 
-    const newRequest = await Request.create({
-      viewer: req.user.id,
-      internship: internshipId,
+    const newRequest = new Request({
+      internshipId,
       message,
+      viewerId: req.user.id,
     });
 
-    res.status(201).json({
-      message: 'Request submitted successfully',
-      request: newRequest,
-    });
+    await newRequest.save();
+
+    res.status(200).json({ message: "Request submitted successfully", data: newRequest });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// Get viewer's submitted requests
+export const getViewerRequests = async (req, res) => {
+  try {
+    const requests = await Request.find({ viewerId: req.user.id })
+      .populate('internshipId', 'title companyName duration stipend') // adjust fields as needed
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(requests);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

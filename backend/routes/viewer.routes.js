@@ -6,7 +6,8 @@ import {
   getInternshipDetails,
   saveInternship,
   removeSavedInternship,
-  submitRequest
+  submitRequest,
+  getViewerRequests
 } from '../controllers/viewer.controller.js';
 import { protect } from '../middlewares/auth.middleware.js';
 
@@ -28,5 +29,8 @@ router.route('/internships/save/:id')
 
 router.route('/request')
   .post(protect, submitRequest);
+
+  router.route('/requests')
+  .get(protect, getViewerRequests);
 
 export default router;

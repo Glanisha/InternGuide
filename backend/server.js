@@ -19,6 +19,7 @@ import multer from 'multer';
 import chatRoutes from "./routes/chat.route.js";
 import feedbackRoutes from "./routes/feedback.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
+import viewerRoutes from "./routes/viewer.routes.js"
 
 
 dotenv.config();
@@ -124,7 +125,7 @@ app.use("/api/faculty", facultyRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/applications", applicationRoutes);
-
+app.use("/api/viewers", viewerRoutes);
 // Start the server
 server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
