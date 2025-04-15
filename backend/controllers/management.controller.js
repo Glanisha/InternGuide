@@ -232,44 +232,75 @@ export const generateProgramMetrics = async (req, res) => {
       ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2)
       : 0;
 
-      let prompt = `Generate a comprehensive program success metrics report for the internship program based on the following data:\n\n`;
-    
-    prompt += `Program Overview:\n`;
-    prompt += `- Total Students: ${totalStudents}\n`;
-    prompt += `- Total Faculty Mentors: ${totalFaculty}\n`;
-    prompt += `- Internships Completed: ${internshipsCompleted}\n`;
-    prompt += `- Average Mentor Rating: ${averageRating.toFixed(2)}/5\n\n`;
+      let prompt = `Generate a comprehensive program success metrics report for the institutional internship program with focus on these management priorities:\n\n`;
 
-    prompt += `Student Performance Summary:\n`;
-    students.forEach((student, index) => {
-      prompt += `\nStudent ${index + 1}:\n`;
-      prompt += `- Name: ${student.name}\n`;
-      prompt += `- Department: ${student.department}\n`;
-      prompt += `- CGPA: ${student.cgpa || "N/A"}\n`;
-      prompt += `- Internships Applied: ${student.appliedInternships?.length || 0}\n`;
-      prompt += `- Skills: ${student.skills?.join(", ") || "None"}\n`;
-      if (student.assignedMentor) {
-        prompt += `- Mentor: ${student.assignedMentor.name} (${student.assignedMentor.email})\n`;
+      // Program Overview Section (Covering Institution-Wide Overview)
+      prompt += `1. Program Overview:\n`;
+      prompt += `- Total Students: ${totalStudents}\n`;
+      prompt += `- Total Faculty Mentors: ${totalFaculty}\n`;
+      prompt += `- Internship Participation Rate: ${((internshipsCompleted/totalStudents)*100).toFixed(2)}%\n`;
+      prompt += `- Average Mentor Rating: ${averageRating}/5\n\n`;
+      
+      // SDG Contribution Analysis (Covering SDG Contribution Tracking)
+      prompt += `2. SDG Alignment Analysis:\n`;
+      // Extract SDG data from internships
+      const sdgCounts = {};
+      students.forEach(student => {
+        student.appliedInternships?.forEach(internship => {
+          if (internship.internship?.sdgGoals) {
+            internship.internship.sdgGoals.forEach(sdg => {
+              sdgCounts[sdg] = (sdgCounts[sdg] || 0) + 1;
+            });
+          }
+        });
+      });
+      
+      if (Object.keys(sdgCounts).length > 0) {
+        prompt += `The internships are contributing to these Sustainable Development Goals:\n`;
+        Object.entries(sdgCounts).forEach(([sdg, count]) => {
+          prompt += `- SDG ${sdg}: ${count} internships\n`;
+        });
+      } else {
+        prompt += `No SDG data available for current internships.\n`;
       }
-    });
-
-    prompt += `\nFaculty Mentoring Summary:\n`;
-    faculty.forEach((facultyMember, index) => {
-      prompt += `\nFaculty ${index + 1}:\n`;
-      prompt += `- Name: ${facultyMember.name}\n`;
-      prompt += `- Department: ${facultyMember.department}\n`;
-      prompt += `- Mentees Assigned: ${facultyMember.assignedStudents?.length || 0}\n`;
-      prompt += `- Mentoring Capacity: ${facultyMember.mentoringCapacity}\n`;
-    });
-
-    prompt += `\nAnalysis Instructions:\n`;
-    prompt += `- Provide a structured report with these sections: Program Overview, Key Performance Indicators, Student Outcomes Analysis, Mentor Effectiveness, Recommendations for Improvement\n`;
-    prompt += `- Include statistical analysis where possible (percentages, averages, trends)\n`;
-    prompt += `- Highlight any correlations between mentor involvement and student outcomes\n`;
-    prompt += `- Suggest concrete actions to improve program effectiveness\n`;
-    prompt += `- Keep the tone professional and data-driven\n`;
-
-    // Call Gemini API
+      
+      // Mentorship Effectiveness (Covering Faculty Mentorship Assessment)
+      prompt += `\n3. Mentorship Effectiveness:\n`;
+      prompt += `- Average mentees per mentor: ${(totalStudents/totalFaculty).toFixed(1)}\n`;
+      // Calculate mentorship load distribution
+      const mentorLoads = faculty.map(f => f.assignedStudents?.length || 0);
+      const maxLoad = Math.max(...mentorLoads);
+      const minLoad = Math.min(...mentorLoads);
+      prompt += `- Current load distribution: Ranges from ${minLoad} to ${maxLoad} mentees per mentor\n`;
+      prompt += `- ${faculty.filter(f => (f.assignedStudents?.length || 0) >= f.mentoringCapacity).length} mentors at or above capacity\n\n`;
+      
+      // Placement Analytics (Covering Internship Placement Analytics)
+      prompt += `4. Placement Analytics:\n`;
+      // Group by department
+      const deptStats = {};
+      students.forEach(student => {
+        const dept = student.department;
+        if (!deptStats[dept]) deptStats[dept] = { students: 0, placements: 0 };
+        deptStats[dept].students++;
+        deptStats[dept].placements += student.appliedInternships?.filter(i => i.status === "Accepted").length || 0;
+      });
+      
+      prompt += `Department-wise placement rates:\n`;
+      Object.entries(deptStats).forEach(([dept, stats]) => {
+        const rate = (stats.placements/stats.students*100).toFixed(1);
+        prompt += `- ${dept}: ${rate}% placement rate (${stats.placements}/${stats.students})\n`;
+      });
+      
+      // Recommendations (Covering Report Generation for Improvement)
+      prompt += `\n5. Recommendations:\n`;
+      prompt += `Based on the data analysis, provide:\n`;
+      prompt += `- 3 key strengths of the current program\n`;
+      prompt += `- 3 actionable areas for improvement\n`;
+      prompt += `- Suggestions for better SDG alignment\n`;
+      prompt += `- Strategies for optimizing mentor-mentee ratios\n`;
+      prompt += `- Department-specific recommendations based on placement rates\n\n`;
+      
+      prompt += `Format the report with clear section headings, use bullet points for readability, and include relevant statistics in each section. Highlight any concerning trends or exceptional performances.`;
     const geminiResponse = await fetch(
       `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
       {

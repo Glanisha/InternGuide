@@ -26,6 +26,8 @@ import MenteeAnalysis from "./components/Faculty/MenteeAnalysis";
 import FacultyProfile from "./components/Faculty/FacultyProfile";
 import MentorPage from "./components/student/MentorPage";
 import ProfilePage from "./components/student/ProfilePage";
+import ManagementDashboard from "./components/Management/ManagementDashboard";
+import MentorshipPage from "./components/Management/MentorshipPage";
 
 const App = () => {
   return (
@@ -59,6 +61,16 @@ const App = () => {
             <Route path="settings" element={<AdminSettings />} />
           </Route>
         </Route>
+
+
+        <Route path="/management" element={<ManagementDashboard/>}>
+          <Route path="dashboard" element={<h2>Dashboard Page</h2>} />
+          <Route path="internships" element={<h2>Internships Page</h2>} />
+          <Route path="profile" element={<h2>Profile Page</h2>} />
+          <Route path="mentorship" element={<MentorshipPage/>} />
+          <Route path="generate-report" element={<h2>Report Page</h2>} />
+        </Route>
+
 
         <Route path="/viewer-dashboard" element={<ViewerDashboard/>} />
 

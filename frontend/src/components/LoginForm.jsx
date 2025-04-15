@@ -50,7 +50,7 @@ const LoginForm = () => {
           navigate('/admin-dashboard');
           break;
         case 'management':
-          navigate('/management-dashboard');
+          navigate('/management');
           break;
         case 'viewer':
           navigate('/viewer-dashboard');
