@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import InternshipCard from './InternshipCard';
 import axios from 'axios';
 import { getBestInternshipRoute } from '../../utils';
-import StudentMentorView from './StudentMentorView';
-import StudentReport from './StudentReport';
-import StudentProfile from './StudentProfile';
-import UpdateProfile from './UpdateProfile';
 import MyApplications from './MyApplications';
+import HurryUpApply from './HurryUpApply';
 
 const Dashboard = () => {
   const [recommendedInternships, setRecommendedInternships] = useState([]);
@@ -35,60 +31,33 @@ const Dashboard = () => {
     fetchRecommendedInternships();
   }, []);
 
-  const applyForInternship = async (internshipId) => {
-try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        `http://localhost:8000/api/student/apply/${internshipId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      alert("Application submitted successfully!");
-    } catch (error) {
-      console.error("Failed to apply:", error);
-      alert("Error applying for internship.");
-    }
-  };
-
-  const toggleUpdateProfile = () => {
-    setShowUpdateProfile(!showUpdateProfile);
-  };
-
-  if (loading) return <p className="text-white">Loading...</p>;
+  if (loading) return (
+    <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
 
   return (
-    <div>
-      <h2 className="text-2xl md:text-3xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300 mb-6">
-        Dashboard
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-          <h3 className="text-lg font-medium mb-4">Upcoming Events</h3>
-          <p className="text-neutral-400">No upcoming events</p>
+    <div className="space-y-8 p-4 max-w-7xl mx-auto">
+      {/* Hurry Up & Apply Section */}
+      <div className="bg-neutral-900/70 rounded-xl p-6 border border-white/10">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-white mb-1">Opportunities Knocking</h2>
+          <p className="text-neutral-400">Time-sensitive internships you don't want to miss</p>
         </div>
-        <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-          <h3 className="text-lg font-medium mb-4">Recent Applications</h3>
-          <p className="text-neutral-400">No recent applications</p>
-        </div>
+        <HurryUpApply />
       </div>
 
-      <StudentProfile />
-      <MyApplications/>
-      
-      {/* Add Update Profile button */}
-      <button 
-        onClick={toggleUpdateProfile}
-        className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg mb-6 transition-colors"
-      >
-        {showUpdateProfile ? 'Hide Update Form' : 'Update Profile'}
-      </button>
-      
-      {/* Conditionally render UpdateProfile */}
-      {showUpdateProfile && <UpdateProfile />}
+      {/* My Applications Section */}
+      <div className="bg-neutral-900/70 rounded-xl p-6 border border-white/10">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-white mb-1">Your Applications</h2>
+          <p className="text-neutral-400">Track the status of your submitted applications</p>
+        </div>
+        <MyApplications />
+      </div>
+
+     
     </div>
   );
 };
