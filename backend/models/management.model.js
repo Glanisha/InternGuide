@@ -4,7 +4,15 @@ const ManagementSchema = new mongoose.Schema(
   {userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, 
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
-    reportsGenerated: [{ type: String }],
+  reportsGenerated: [{
+    report: { type: String, required: true },
+    reportType: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  programAnalytics: {
+    completionRate: Number,
+    averageRating: Number
+  },
     sdgTracking: [
       {
         sdg: { type: String },
