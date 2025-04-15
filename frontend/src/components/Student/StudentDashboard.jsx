@@ -59,14 +59,14 @@ const StudentDashboard = () => {
             </NavLink>
            
             <NavLink
-              to="/student/messages"
+              to="/student/profile"
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) => 
                 `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
               }
             >
-              <FiMessageSquare size={20} />
-              <span>Messages</span>
+              <FiUser size={20} />
+              <span>Profile</span>
             </NavLink>
             <NavLink
               to="/student/mentor"

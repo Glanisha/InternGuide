@@ -13,17 +13,13 @@ const UpdateProfile = () => {
     cgpa: '',
     availability: '',
     locationPreference: '',
-    skills: [],
-    interests: [],
-    preferredRoles: [],
-    certifications: [],
-    achievements: [],
-    newSkill: '',
-    newInterest: '',
-    newPreferredRole: '',
-    newCertification: '',
-    newAchievement: ''
+    skills: '',
+    interests: '',
+    preferredRoles: '',
+    certifications: '',
+    achievements: ''
   });
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -51,16 +47,11 @@ const UpdateProfile = () => {
           cgpa: student.cgpa || '',
           availability: student.availability || '',
           locationPreference: student.locationPreference || '',
-          skills: student.skills || [],
-          interests: student.interests || [],
-          preferredRoles: student.preferredRoles || [],
-          certifications: student.certifications || [],
-          achievements: student.achievements || [],
-          newSkill: '',
-          newInterest: '',
-          newPreferredRole: '',
-          newCertification: '',
-          newAchievement: ''
+          skills: student.skills?.join(', ') || '',
+          interests: student.interests?.join(', ') || '',
+          preferredRoles: student.preferredRoles?.join(', ') || '',
+          certifications: student.certifications?.join(', ') || '',
+          achievements: student.achievements?.join(', ') || ''
         });
       } catch (err) {
         console.error('Failed to fetch student profile:', err);
@@ -81,24 +72,6 @@ const UpdateProfile = () => {
     }));
   };
 
-  const handleAddItem = (field) => {
-    const newItem = formData[`new${field.charAt(0).toUpperCase() + field.slice(1)}`];
-    if (newItem.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        [field]: [...prev[field], newItem.trim()],
-        [`new${field.charAt(0).toUpperCase() + field.slice(1)}`]: ''
-      }));
-    }
-  };
-
-  const handleRemoveItem = (field, index) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index)
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -107,36 +80,34 @@ const UpdateProfile = () => {
 
     try {
       const token = localStorage.getItem('token');
+      
+      // Convert comma-separated strings back to arrays
       const payload = {
-        name: formData.name,
-        email: formData.email,
-        department: formData.department,
-        phoneNumber: formData.phoneNumber,
-        linkedinProfile: formData.linkedinProfile,
-        portfolioWebsite: formData.portfolioWebsite,
-        resume: formData.resume,
-        cgpa: formData.cgpa,
-        availability: formData.availability,
-        locationPreference: formData.locationPreference,
-        skills: formData.skills,
-        interests: formData.interests,
-        preferredRoles: formData.preferredRoles,
-        certifications: formData.certifications,
-        achievements: formData.achievements
+        ...formData,
+        skills: formData.skills.split(',').map(s => s.trim()).filter(s => s),
+        interests: formData.interests.split(',').map(s => s.trim()).filter(s => s),
+        preferredRoles: formData.preferredRoles.split(',').map(s => s.trim()).filter(s => s),
+        certifications: formData.certifications.split(',').map(s => s.trim()).filter(s => s),
+        achievements: formData.achievements.split(',').map(s => s.trim()).filter(s => s)
       };
 
-      await axios.put('http://localhost:8000/api/student/update', payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axios.put(
+        'http://localhost:8000/api/student/update',
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
+      
     } catch (err) {
       console.error('Failed to update profile:', err);
-      setError(err.response?.data?.error || 'Failed to update profile');
+      setError(err.response?.data?.error || 'Failed to update profile. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -293,192 +264,67 @@ const UpdateProfile = () => {
           </div>
         </div>
 
-        {/* Lists */}
+        {/* Lists as comma-separated inputs */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Skills */}
-          <div className="space-y-2">
-            <label className="block text-neutral-400 mb-1">Skills</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formData.newSkill}
-                onChange={(e) => setFormData({...formData, newSkill: e.target.value})}
-                className="flex-1 bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
-                placeholder="Add new skill"
-              />
-              <button
-                type="button"
-                onClick={() => handleAddItem('skills')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg"
-              >
-                Add
-              </button>
-            </div>
-            {formData.skills.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.skills.map((skill, index) => (
-                  <div key={index} className="bg-neutral-800 rounded-full px-3 py-1 text-sm flex items-center">
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem('skills', index)}
-                      className="ml-2 text-neutral-400 hover:text-white"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Interests */}
-          <div className="space-y-2">
-            <label className="block text-neutral-400 mb-1">Interests</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formData.newInterest}
-                onChange={(e) => setFormData({...formData, newInterest: e.target.value})}
-                className="flex-1 bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
-                placeholder="Add new interest"
-              />
-              <button
-                type="button"
-                onClick={() => handleAddItem('interests')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg"
-              >
-                Add
-              </button>
-            </div>
-            {formData.interests.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.interests.map((interest, index) => (
-                  <div key={index} className="bg-neutral-800 rounded-full px-3 py-1 text-sm flex items-center">
-                    {interest}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem('interests', index)}
-                      className="ml-2 text-neutral-400 hover:text-white"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Preferred Roles */}
-          <div className="space-y-2">
-            <label className="block text-neutral-400 mb-1">Preferred Roles</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formData.newPreferredRole}
-                onChange={(e) => setFormData({...formData, newPreferredRole: e.target.value})}
-                className="flex-1 bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
-                placeholder="Add new role"
-              />
-              <button
-                type="button"
-                onClick={() => handleAddItem('preferredRoles')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg"
-              >
-                Add
-              </button>
-            </div>
-            {formData.preferredRoles.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.preferredRoles.map((role, index) => (
-                  <div key={index} className="bg-neutral-800 rounded-full px-3 py-1 text-sm flex items-center">
-                    {role}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem('preferredRoles', index)}
-                      className="ml-2 text-neutral-400 hover:text-white"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Certifications */}
-          <div className="space-y-2">
-            <label className="block text-neutral-400 mb-1">Certifications</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formData.newCertification}
-                onChange={(e) => setFormData({...formData, newCertification: e.target.value})}
-                className="flex-1 bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
-                placeholder="Add new certification"
-              />
-              <button
-                type="button"
-                onClick={() => handleAddItem('certifications')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg"
-              >
-                Add
-              </button>
-            </div>
-            {formData.certifications.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.certifications.map((cert, index) => (
-                  <div key={index} className="bg-neutral-800 rounded-full px-3 py-1 text-sm flex items-center">
-                    {cert}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem('certifications', index)}
-                      className="ml-2 text-neutral-400 hover:text-white"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Achievements */}
-        <div className="space-y-2">
-          <label className="block text-neutral-400 mb-1">Achievements</label>
-          <div className="flex gap-2">
+          <div>
+            <label className="block text-neutral-400 mb-1">Skills (comma separated)</label>
             <input
               type="text"
-              value={formData.newAchievement}
-              onChange={(e) => setFormData({...formData, newAchievement: e.target.value})}
-              className="flex-1 bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
-              placeholder="Add new achievement"
+              name="skills"
+              value={formData.skills}
+              onChange={handleChange}
+              className="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+              placeholder="JavaScript, Python, React"
             />
-            <button
-              type="button"
-              onClick={() => handleAddItem('achievements')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg"
-            >
-              Add
-            </button>
           </div>
-          {formData.achievements.length > 0 && (
-            <div className="mt-2 space-y-1">
-              {formData.achievements.map((achievement, index) => (
-                <div key={index} className="flex items-center justify-between bg-neutral-800 rounded-lg px-3 py-2">
-                  <span>{achievement}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem('achievements', index)}
-                    className="text-neutral-400 hover:text-white"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          
+          <div>
+            <label className="block text-neutral-400 mb-1">Interests (comma separated)</label>
+            <input
+              type="text"
+              name="interests"
+              value={formData.interests}
+              onChange={handleChange}
+              className="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+              placeholder="Web Development, AI, UX Design"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-neutral-400 mb-1">Preferred Roles (comma separated)</label>
+            <input
+              type="text"
+              name="preferredRoles"
+              value={formData.preferredRoles}
+              onChange={handleChange}
+              className="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+              placeholder="Frontend Developer, Data Analyst"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-neutral-400 mb-1">Certifications (comma separated)</label>
+            <input
+              type="text"
+              name="certifications"
+              value={formData.certifications}
+              onChange={handleChange}
+              className="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+              placeholder="AWS Certified, Google Analytics"
+            />
+          </div>
+          
+          <div className="md:col-span-2">
+            <label className="block text-neutral-400 mb-1">Achievements (comma separated)</label>
+            <input
+              type="text"
+              name="achievements"
+              value={formData.achievements}
+              onChange={handleChange}
+              className="w-full bg-neutral-800 border border-white/10 rounded-lg px-3 py-2 text-white"
+              placeholder="Hackathon winner, Published paper"
+            />
+          </div>
         </div>
 
         <div className="pt-4">

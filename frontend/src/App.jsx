@@ -25,6 +25,7 @@ import FacultyMentees from "./components/Faculty/FacultyMentees";
 import MenteeAnalysis from "./components/Faculty/MenteeAnalysis";
 import FacultyProfile from "./components/Faculty/FacultyProfile";
 import MentorPage from "./components/student/MentorPage";
+import ProfilePage from "./components/student/ProfilePage";
 
 const App = () => {
   return (
@@ -37,7 +38,7 @@ const App = () => {
           <Route path="/student" element={<StudentDashboard />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="internships" element={<Internships />} />
-            <Route path="profile" element={<Profile />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="messages" element={<Messages />} />
             <Route path="generate-report" element={<ReportPage />} />
             <Route path="mentor" element={<MentorPage/>} />
