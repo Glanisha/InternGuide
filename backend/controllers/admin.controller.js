@@ -187,7 +187,7 @@ export const getDashboardStats = async (req, res) => {
         acc.push({ name: internship.company, count: 1 });
       }
       return acc;
-    }, []).sort((a, b) => b.count - a.count).slice(0, 5);
+    }, []).sort((a, b) => b.count - a.count).slice(0, 10); // Changed to top 10 companies
 
     // SDG Analytics
     const sdgDistribution = allInternships.reduce((acc, internship) => {
@@ -229,7 +229,6 @@ export const getDashboardStats = async (req, res) => {
 
     // Industry distribution of internships
     const industryDistribution = allInternships.reduce((acc, internship) => {
-      // Assuming department can represent industry or you might need a separate field
       const industry = internship.department || 'Other';
       const existing = acc.find(i => i.industry === industry);
       if (existing) {
@@ -270,6 +269,30 @@ export const getDashboardStats = async (req, res) => {
       return acc;
     }, []).sort((a, b) => b.count - a.count).slice(0, 5);
 
+    // Work mode preferred by companies
+    const companyWorkModePreference = allInternships.reduce((acc, internship) => {
+      const existing = acc.find(m => m.mode === internship.mode);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ mode: internship.mode, count: 1 });
+      }
+      return acc;
+    }, []).sort((a, b) => b.count - a.count);
+
+    // Work mode preferred by students (assuming students have preferredMode field)
+    const studentWorkModePreference = allStudents.reduce((acc, student) => {
+      if (student.preferredMode) {
+        const existing = acc.find(m => m.mode === student.preferredMode);
+        if (existing) {
+          existing.count++;
+        } else {
+          acc.push({ mode: student.preferredMode, count: 1 });
+        }
+      }
+      return acc;
+    }, []).sort((a, b) => b.count - a.count);
+
     res.status(200).json({
       success: true,
       stats: {
@@ -286,7 +309,8 @@ export const getDashboardStats = async (req, res) => {
         participationRate: `${participationRate}%`,
         industryCollaboration: {
           totalCompanies: companyCount,
-          topCompanies
+          allCompanies: uniqueCompanies, // Added list of all companies
+          topCompanies // Now shows top 10 companies
         },
         sdgAnalytics: {
           sdgDistribution,
@@ -303,10 +327,11 @@ export const getDashboardStats = async (req, res) => {
         modeDistribution: {
           remote: allInternships.filter(i => i.mode === 'Remote').length,
           hybrid: allInternships.filter(i => i.mode === 'Hybrid').length,
-          onsite: allInternships.filter(i => i.mode === 'Onsite').length
+          onsite: allInternships.filter(i => i.mode === 'Onsite').length,
+          companyPreferences: companyWorkModePreference, // Added company work mode preferences
+          studentPreferences: studentWorkModePreference // Added student work mode preferences
         },
         departmentStats: {
-          // Distribution of internships by department
           departments: allInternships.reduce((acc, internship) => {
             const dept = internship.department || 'Other';
             const existing = acc.find(d => d.department === dept);
