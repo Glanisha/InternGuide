@@ -34,6 +34,7 @@ import ManagementDashboard from "./components/Management/ManagementDashboard";
 import MentorshipPage from "./components/Management/MentorshipPage";
 import StatsPage from "./components/Management/StatsPage";
 import InternshipPage from "./components/Management/InternshipPage";
+import SDGPage from "./components/Management/SDGPage";
 
 const App = () => {
   return (
@@ -73,7 +74,7 @@ const App = () => {
         <Route path="/management" element={<ManagementDashboard/>}>
           <Route path="dashboard" element={<StatsPage/>} />
           <Route path="internships" element={<InternshipPage/>} />
-          <Route path="profile" element={<h2>Profile Page</h2>} />
+          <Route path="sdg" element={<SDGPage/>} />
           <Route path="mentorship" element={<MentorshipPage/>} />
           <Route path="generate-report" element={<h2>Report Page</h2>} />
         </Route>

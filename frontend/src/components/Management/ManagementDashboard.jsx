@@ -82,6 +82,17 @@ const ManagementDashboard = () => {
               <FiFileText size={20} />
               <span>Reports</span>
             </NavLink>
+
+            <NavLink
+              to="/management/sdg"
+              onClick={() => setSidebarOpen(false)}
+              className={({ isActive }) =>
+                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-pink-500/20 text-pink-400' : 'text-neutral-300 hover:bg-white/5'}`
+              }
+            >
+              <FiFileText size={20} />
+              <span>SDG</span>
+            </NavLink>
           </div>
 
           {/* Logout */}
