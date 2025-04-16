@@ -12,6 +12,7 @@ import Profile from "./components/student/Profile";
 import Messages from "./components/student/Messages";
 import Settings from "./components/student/Settings";
 import ReportPage from "./components/student/ReportPage";
+import InternshipCard from "./components/Management/InternshipCard";
 import ViewerDashboard from "./components/Viewer/ViewerDashboard";
 
 // Admin components
@@ -29,6 +30,7 @@ import ProfilePage from "./components/student/ProfilePage";
 import ManagementDashboard from "./components/Management/ManagementDashboard";
 import MentorshipPage from "./components/Management/MentorshipPage";
 import StatsPage from "./components/Management/StatsPage";
+import InternshipPage from "./components/Management/InternshipPage";
 
 const App = () => {
   return (
@@ -66,7 +68,7 @@ const App = () => {
 
         <Route path="/management" element={<ManagementDashboard/>}>
           <Route path="dashboard" element={<StatsPage/>} />
-          <Route path="internships" element={<h2>Internships Page</h2>} />
+          <Route path="internships" element={<InternshipPage/>} />
           <Route path="profile" element={<h2>Profile Page</h2>} />
           <Route path="mentorship" element={<MentorshipPage/>} />
           <Route path="generate-report" element={<h2>Report Page</h2>} />

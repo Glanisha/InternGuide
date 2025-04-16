@@ -32,7 +32,34 @@ export default function Stats() {
     totalViewers: 0,
     activeInternships: 0,
     ongoingInternships: 0,
-    pendingApplications: 0
+    pendingApplications: 0,
+    totalInternships: 0,
+    participationRate: "0%",
+    industryCollaboration: {
+      totalCompanies: 0,
+      allCompanies: [],
+      topCompanies: []
+    },
+    sdgAnalytics: {
+      sdgDistribution: [],
+      studentSdgParticipation: []
+    },
+    placementAnalytics: {
+      placementRate: "0%",
+      totalApplications: 0,
+      acceptedApplications: 0,
+      industryDistribution: [],
+      preferredRoles: [],
+      popularSkills: []
+    },
+    departmentStats: {
+      departments: []
+    },
+    modeDistribution: {
+      remote: 0,
+      hybrid: 0,
+      onsite: 0
+    }
   });
 
   const fetchStats = async () => {
@@ -50,43 +77,45 @@ export default function Stats() {
       console.error("Failed to fetch dashboard stats:", err);
     }
   };
-
+  
   useEffect(() => {
     fetchStats();
   }, []);
-
+  
   const statsCardStyle = 
     "p-4 rounded-xl bg-neutral-900/50 border border-white/10 backdrop-blur-md";
 
-  const StatCard = ({ title, value, icon, trend }) => (
-    <div className={statsCardStyle}>
-      <div className="flex items-center gap-4">
-        <div className="text-2xl">{icon}</div>
-        <div className="flex-1">
-          <p className="text-sm text-neutral-400">{title}</p>
-          <p className="text-xl text-white font-semibold">{value}</p>
-        </div>
-        {trend && (
-          <div className={`px-2 py-1 rounded-md text-xs ${
-            trend > 0 ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'
-          }`}>
-            {trend > 0 ? `↑ ${trend}%` : `↓ ${Math.abs(trend)}%`}
+    const StatCard = ({ title, value, icon, trend }) => (
+        <div className={statsCardStyle}>
+          <div className="flex items-center gap-4">
+            <div className="text-2xl">{icon}</div>
+            <div className="flex-1">
+              <p className="text-sm text-neutral-400">{title}</p>
+              <p className="text-xl text-white font-semibold">{value}</p>
+            </div>
+            {typeof trend === 'number' && (
+              <div
+                className={`px-2 py-1 rounded-md text-xs ${
+                  trend > 0 ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'
+                }`}
+              >
+                {trend > 0 ? `↑ ${trend}%` : `↓ ${Math.abs(trend)}%`}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const ChartCard = ({ title, children, icon }) => (
-    <div className={`${statsCardStyle} col-span-1 md:col-span-2`}>
-      <div className="flex items-center gap-2 mb-4">
-        {icon && <div className="text-lg">{icon}</div>}
-        <h3 className="font-medium text-white">{title}</h3>
-      </div>
-      {children}
-    </div>
-  );
-
+        </div>
+      );
+      
+      const ChartCard = ({ title, children, icon }) => (
+        <div className={`${statsCardStyle} col-span-1 md:col-span-2`}>
+          <div className="flex items-center gap-2 mb-4">
+            {icon && <div className="text-lg">{icon}</div>}
+            <h3 className="font-medium text-white">{title}</h3>
+          </div>
+          {children}
+        </div>
+      );
+      
   // Prepare data for charts
   const sdgData = {
     labels: stats.sdgAnalytics?.sdgDistribution.map(sdg => sdg.sdg),
@@ -96,7 +125,9 @@ export default function Stats() {
         data: stats.sdgAnalytics?.sdgDistribution.map(sdg => sdg.count),
         backgroundColor: [
           '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-          '#FF9F40', '#8AC24A', '#F06292', '#7986CB', '#E57373'
+          '#FF9F40', '#8AC24A', '#F06292', '#7986CB', '#E57373',
+          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+          '#FF9F40'
         ],
         borderWidth: 1
       }
@@ -157,6 +188,20 @@ export default function Stats() {
     ]
   };
 
+  const studentParticipationData = {
+    labels: stats.sdgAnalytics?.studentSdgParticipation.map(sdg => sdg.sdg),
+    datasets: [
+      {
+        label: 'Students Participating',
+        data: stats.sdgAnalytics?.studentSdgParticipation.map(sdg => sdg.students),
+        borderColor: '#3B82F6',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        tension: 0.3,
+        fill: true
+      }
+    ]
+  };
+
   return (
     <div className="p-4 md:p-6">
       <div className="mb-8">
@@ -199,6 +244,21 @@ export default function Stats() {
           icon={<FiBriefcase size={24} className="text-red-400" />}
         />
         <StatCard
+          title="Total Internships"
+          value={stats.totalInternships}
+          icon={<FiBriefcase size={24} className="text-indigo-400" />}
+        />
+        <StatCard
+          title="Total Applications"
+          value={stats.placementAnalytics?.totalApplications}
+          icon={<FiBarChart2 size={24} className="text-blue-400" />}
+        />
+        <StatCard
+          title="Accepted Applications"
+          value={stats.placementAnalytics?.acceptedApplications}
+          icon={<FiAward size={24} className="text-green-400" />}
+        />
+        <StatCard
           title="Participation Rate"
           value={stats.participationRate}
           icon={<FiTrendingUp size={24} className="text-teal-400" />}
@@ -207,6 +267,11 @@ export default function Stats() {
           title="Placement Rate"
           value={stats.placementAnalytics?.placementRate}
           icon={<FiAward size={24} className="text-indigo-400" />}
+        />
+        <StatCard
+          title="Total Companies"
+          value={stats.industryCollaboration?.totalCompanies}
+          icon={<FiBriefcase size={24} className="text-orange-400" />}
         />
       </div>
 
@@ -224,7 +289,7 @@ export default function Stats() {
                     labels: {
                       color: '#E5E7EB',
                       font: {
-                        size: 12
+                        size: 10
                       }
                     }
                   }
@@ -329,100 +394,98 @@ export default function Stats() {
           </div>
         </ChartCard>
 
-        <ChartCard title="Top Student Skills" icon={<FiTrendingUp className="text-red-400" />}>
-          <div className="h-64">
-            <Pie 
-              data={skillsData} 
-              options={{ 
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    position: 'right',
-                    labels: {
-                      color: '#E5E7EB',
-                      font: {
-                        size: 12
+        {stats.placementAnalytics?.popularSkills?.length > 0 && (
+          <ChartCard title="Top Student Skills" icon={<FiTrendingUp className="text-red-400" />}>
+            <div className="h-64">
+              <Pie 
+                data={skillsData} 
+                options={{ 
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: 'right',
+                      labels: {
+                        color: '#E5E7EB',
+                        font: {
+                          size: 10
+                        }
                       }
                     }
                   }
-                }
-              }} 
-            />
-          </div>
-        </ChartCard>
+                }} 
+              />
+            </div>
+          </ChartCard>
+        )}
 
-        <ChartCard title="Student SDG Participation" icon={<FiGlobe className="text-teal-400" />}>
-          <div className="h-64">
-            <Line 
-              data={{
-                labels: stats.sdgAnalytics?.studentSdgParticipation.map(sdg => sdg.sdg),
-                datasets: [{
-                  label: 'Students Participating',
-                  data: stats.sdgAnalytics?.studentSdgParticipation.map(sdg => sdg.students),
-                  borderColor: '#3B82F6',
-                  backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                  tension: 0.3,
-                  fill: true
-                }]
-              }} 
-              options={{ 
-                maintainAspectRatio: false,
-                responsive: true,
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    ticks: {
-                      color: '#E5E7EB'
+        {stats.sdgAnalytics?.studentSdgParticipation?.length > 0 && (
+          <ChartCard title="Student SDG Participation" icon={<FiGlobe className="text-teal-400" />}>
+            <div className="h-64">
+              <Line 
+                data={studentParticipationData} 
+                options={{ 
+                  maintainAspectRatio: false,
+                  responsive: true,
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        color: '#E5E7EB'
+                      },
+                      grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                      }
                     },
-                    grid: {
-                      color: 'rgba(255, 255, 255, 0.1)'
+                    x: {
+                      ticks: {
+                        color: '#E5E7EB'
+                      },
+                      grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                      }
                     }
                   },
-                  x: {
-                    ticks: {
-                      color: '#E5E7EB'
-                    },
-                    grid: {
-                      color: 'rgba(255, 255, 255, 0.1)'
+                  plugins: {
+                    legend: {
+                      labels: {
+                        color: '#E5E7EB'
+                      }
                     }
                   }
-                },
-                plugins: {
-                  legend: {
-                    labels: {
-                      color: '#E5E7EB'
-                    }
-                  }
-                }
-              }} 
-            />
-          </div>
-        </ChartCard>
+                }} 
+              />
+            </div>
+          </ChartCard>
+        )}
       </div>
 
       {/* Additional Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <ChartCard title="Top Preferred Roles">
-          <div className="space-y-2">
-            {stats.placementAnalytics?.preferredRoles.map((role, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <span className="text-neutral-300">{role.role}</span>
-                <span className="text-white font-medium">{role.count}</span>
-              </div>
-            ))}
-          </div>
-        </ChartCard>
+        {stats.placementAnalytics?.preferredRoles?.length > 0 && (
+          <ChartCard title="Top Preferred Roles">
+            <div className="space-y-2">
+              {stats.placementAnalytics.preferredRoles.map((role, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-neutral-300">{role.role}</span>
+                  <span className="text-white font-medium">{role.count}</span>
+                </div>
+              ))}
+            </div>
+          </ChartCard>
+        )}
 
-        <ChartCard title="Department Stats">
-          <div className="space-y-2">
-            {stats.departmentStats?.departments.map((dept, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <span className="text-neutral-300">{dept.department}</span>
-                <span className="text-white font-medium">{dept.count}</span>
-              </div>
-            ))}
-          </div>
-        </ChartCard>
+        {stats.departmentStats?.departments?.length > 0 && (
+          <ChartCard title="Department Stats">
+            <div className="space-y-2">
+              {stats.departmentStats.departments.map((dept, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-neutral-300">{dept.department}</span>
+                  <span className="text-white font-medium">{dept.count}</span>
+                </div>
+              ))}
+            </div>
+          </ChartCard>
+        )}
 
         <ChartCard title="Industry Collaboration">
           <div className="space-y-2">
@@ -430,7 +493,7 @@ export default function Stats() {
               <span className="text-neutral-300">Total Companies</span>
               <span className="text-white font-medium">{stats.industryCollaboration?.totalCompanies}</span>
             </div>
-            {stats.industryCollaboration?.topCompanies.map((company, index) => (
+            {stats.industryCollaboration?.topCompanies?.slice(0, 5).map((company, index) => (
               <div key={index} className="flex items-center justify-between">
                 <span className="text-neutral-300">{company.name}</span>
                 <span className="text-white font-medium">{company.count}</span>
