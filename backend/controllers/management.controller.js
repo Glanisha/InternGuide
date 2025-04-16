@@ -42,7 +42,7 @@ export const getInternshipAnalytics = async (req, res) => {
 export const getViewerRequests = async (req, res) => {
   try {
     // Find all requests
-    const requests = await Request.find().populate('viewerId').populate('internshipId');
+    const requests = await Request.find().populate('viewerId');
     res.status(200).json(requests);
   } catch (error) {
     res.status(500).json({ message: error.message });
