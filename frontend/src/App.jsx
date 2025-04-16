@@ -28,6 +28,7 @@ import MentorPage from "./components/student/MentorPage";
 import ProfilePage from "./components/student/ProfilePage";
 import ManagementDashboard from "./components/Management/ManagementDashboard";
 import MentorshipPage from "./components/Management/MentorshipPage";
+import StatsPage from "./components/Management/StatsPage";
 
 const App = () => {
   return (
@@ -64,7 +65,7 @@ const App = () => {
 
 
         <Route path="/management" element={<ManagementDashboard/>}>
-          <Route path="dashboard" element={<h2>Dashboard Page</h2>} />
+          <Route path="dashboard" element={<StatsPage/>} />
           <Route path="internships" element={<h2>Internships Page</h2>} />
           <Route path="profile" element={<h2>Profile Page</h2>} />
           <Route path="mentorship" element={<MentorshipPage/>} />

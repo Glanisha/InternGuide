@@ -89,15 +89,17 @@ const RegisterForm = () => {
           </div>
 
           <div>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-neutral-900/70 border border-neutral-800 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-neutral-200"
-            >
-              <option value="student">Student</option>
-              <option value="faculty">Faculty</option>
-              <option value="management">Management</option>
-            </select>
+          <select
+  value={role}
+  onChange={(e) => setRole(e.target.value)}
+  className="w-full px-4 py-3 rounded-lg bg-neutral-900/70 border border-neutral-800 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-neutral-200"
+>
+  <option value="student">Student</option>
+  <option value="faculty">Faculty</option>
+  <option value="management">Management</option>
+  <option value="viewer">Viewer</option> {/* <-- Add this */}
+</select>
+
           </div>
 
           {(role === 'student' || role === 'faculty') && (

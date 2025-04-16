@@ -149,7 +149,11 @@ export const getDashboardStats = async (req, res) => {
       totalViewers,
       activeInternships,
       ongoingInternships,
-      pendingApplications
+      pendingApplications,
+      allInternships,
+      allApplications,
+      allStudents,
+      allCompanies
     ] = await Promise.all([
       Student.countDocuments(),
       Faculty.countDocuments(),
@@ -159,18 +163,161 @@ export const getDashboardStats = async (req, res) => {
         status: "Closed",
         applicationDeadline: { $gte: new Date() }
       }),
-      Application.countDocuments({ status: "Pending" })
+      Application.countDocuments({ status: "Pending" }),
+      Internship.find(),
+      Application.find().populate('student'),
+      Student.find(),
+      Internship.distinct('company')
     ]);
+
+    // Calculate student participation rate
+    const studentsWithInternships = allStudents.filter(s => s.appliedInternships.length > 0).length;
+    const participationRate = totalStudents > 0 
+      ? (studentsWithInternships / totalStudents * 100).toFixed(2) 
+      : 0;
+
+    // Industry collaboration statistics
+    const uniqueCompanies = [...new Set(allInternships.map(i => i.company))];
+    const companyCount = uniqueCompanies.length;
+    const topCompanies = allInternships.reduce((acc, internship) => {
+      const existing = acc.find(c => c.name === internship.company);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ name: internship.company, count: 1 });
+      }
+      return acc;
+    }, []).sort((a, b) => b.count - a.count).slice(0, 5);
+
+    // SDG Analytics
+    const sdgDistribution = allInternships.reduce((acc, internship) => {
+      if (internship.sdgGoals && internship.sdgGoals.length > 0) {
+        internship.sdgGoals.forEach(sdg => {
+          const existing = acc.find(s => s.sdg === sdg);
+          if (existing) {
+            existing.count++;
+          } else {
+            acc.push({ sdg, count: 1 });
+          }
+        });
+      }
+      return acc;
+    }, []).sort((a, b) => b.count - a.count);
+
+    // Student SDG participation
+    const studentSdgParticipation = allStudents.reduce((acc, student) => {
+      student.appliedInternships.forEach(app => {
+        const internship = allInternships.find(i => i._id.equals(app.internship));
+        if (internship && internship.sdgGoals) {
+          internship.sdgGoals.forEach(sdg => {
+            const existing = acc.find(s => s.sdg === sdg);
+            if (existing) {
+              existing.students++;
+            } else {
+              acc.push({ sdg, students: 1 });
+            }
+          });
+        }
+      });
+      return acc;
+    }, []).sort((a, b) => b.students - a.students);
+
+    // Internship Placement Analytics
+    const placementRate = allApplications.length > 0
+      ? (allApplications.filter(a => a.status === 'Accepted').length / allApplications.length * 100).toFixed(2)
+      : 0;
+
+    // Industry distribution of internships
+    const industryDistribution = allInternships.reduce((acc, internship) => {
+      // Assuming department can represent industry or you might need a separate field
+      const industry = internship.department || 'Other';
+      const existing = acc.find(i => i.industry === industry);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ industry, count: 1 });
+      }
+      return acc;
+    }, []).sort((a, b) => b.count - a.count);
+
+    // Student skills analysis
+    const popularSkills = allStudents.reduce((acc, student) => {
+      if (student.skills && student.skills.length > 0) {
+        student.skills.forEach(skill => {
+          const existing = acc.find(s => s.skill === skill);
+          if (existing) {
+            existing.count++;
+          } else {
+            acc.push({ skill, count: 1 });
+          }
+        });
+      }
+      return acc;
+    }, []).sort((a, b) => b.count - a.count).slice(0, 10);
+
+    // Student preferred roles
+    const preferredRoles = allStudents.reduce((acc, student) => {
+      if (student.preferredRoles && student.preferredRoles.length > 0) {
+        student.preferredRoles.forEach(role => {
+          const existing = acc.find(r => r.role === role);
+          if (existing) {
+            existing.count++;
+          } else {
+            acc.push({ role, count: 1 });
+          }
+        });
+      }
+      return acc;
+    }, []).sort((a, b) => b.count - a.count).slice(0, 5);
 
     res.status(200).json({
       success: true,
       stats: {
+        // Existing stats
         totalStudents,
         totalMentors,
         totalViewers,
         activeInternships,
         ongoingInternships,
-        pendingApplications
+        pendingApplications,
+        
+        // New stats
+        totalInternships: allInternships.length,
+        participationRate: `${participationRate}%`,
+        industryCollaboration: {
+          totalCompanies: companyCount,
+          topCompanies
+        },
+        sdgAnalytics: {
+          sdgDistribution,
+          studentSdgParticipation
+        },
+        placementAnalytics: {
+          placementRate: `${placementRate}%`,
+          totalApplications: allApplications.length,
+          acceptedApplications: allApplications.filter(a => a.status === 'Accepted').length,
+          industryDistribution,
+          popularSkills,
+          preferredRoles
+        },
+        modeDistribution: {
+          remote: allInternships.filter(i => i.mode === 'Remote').length,
+          hybrid: allInternships.filter(i => i.mode === 'Hybrid').length,
+          onsite: allInternships.filter(i => i.mode === 'Onsite').length
+        },
+        departmentStats: {
+          // Distribution of internships by department
+          departments: allInternships.reduce((acc, internship) => {
+            const dept = internship.department || 'Other';
+            const existing = acc.find(d => d.department === dept);
+            if (existing) {
+              existing.count++;
+            } else {
+              acc.push({ department: dept, count: 1 });
+            }
+            return acc;
+          }, []).sort((a, b) => b.count - a.count)
+        }
       }
     });
   } catch (error) {

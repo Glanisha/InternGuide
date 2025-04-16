@@ -1,12 +1,17 @@
 // src/components/admin/Sidebar.jsx
 import { FiHome, FiBriefcase, FiUsers, FiSettings, FiX } from 'react-icons/fi';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function Sidebar({ sidebarOpen, toggleSidebar }) {
   const location = useLocation();
-  
-  // Get the current path after /admin-dashboard/
+  const navigate = useNavigate();
+
   const currentPath = location.pathname.split('/admin-dashboard/')[1] || 'dashboard';
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/');
+  };
 
   return (
     <div className={`fixed lg:static inset-y-0 left-0 w-64 bg-neutral-900/70 backdrop-blur-sm border-r border-white/10 z-30 transition-all duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
@@ -58,7 +63,10 @@ export default function Sidebar({ sidebarOpen, toggleSidebar }) {
       </nav>
 
       <div className="p-4 border-t border-white/10">
-        <button className="w-full py-2 text-sm bg-red-600/90 hover:bg-red-700/90 rounded-lg transition-colors">
+        <button
+          onClick={handleLogout}
+          className="w-full py-2 text-sm bg-red-600/90 hover:bg-red-700/90 rounded-lg transition-colors"
+        >
           Logout
         </button>
       </div>
