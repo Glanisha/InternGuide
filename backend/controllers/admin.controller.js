@@ -4,6 +4,9 @@ import Faculty from "../models/faculty.model.js";
 import mongoose from 'mongoose';
 import Request from "../models/request.model.js";
 import Internship from "../models/internship.model.js";
+import Application from "../models/application.model.js";
+import Viewer from "../models/viewer.model.js";
+
 
 export const assignMentors = async (req, res) => {
   try {
@@ -30,6 +33,8 @@ export const assignMentors = async (req, res) => {
       res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+
 export const confirmMentors = async (req, res) => {
   try {
     const { assignments } = req.body;
@@ -131,5 +136,48 @@ export const rejectRequest = async (req, res) => {
   } catch (error) {
     console.error("Error rejecting request:", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+//Lizas code for admin dashboard get stats
+export const getDashboardStats = async (req, res) => {
+  try {
+    const [
+      totalStudents,
+      totalMentors,
+      totalViewers,
+      activeInternships,
+      ongoingInternships,
+      pendingApplications
+    ] = await Promise.all([
+      Student.countDocuments(),
+      Faculty.countDocuments(),
+      Viewer.countDocuments(),
+      Internship.countDocuments({ status: "Open" }),
+      Internship.countDocuments({
+        status: "Closed",
+        applicationDeadline: { $gte: new Date() }
+      }),
+      Application.countDocuments({ status: "Pending" })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        totalStudents,
+        totalMentors,
+        totalViewers,
+        activeInternships,
+        ongoingInternships,
+        pendingApplications
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch dashboard statistics"
+    });
   }
 };

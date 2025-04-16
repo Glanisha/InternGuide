@@ -1,20 +1,55 @@
-// src/components/admin/Dashboard.jsx
-import { FiPlus, FiUsers, FiBriefcase, FiEdit2, FiTrash2 } from 'react-icons/fi';
-import StatsCard from './StatsCard';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  FiUsers,
+  FiBriefcase,
+} from "react-icons/fi";
 
-export default function Dashboard({ 
-  stats = {
+export default function Dashboard() {
+  const [stats, setStats] = useState({
     totalStudents: 0,
     totalMentors: 0,
+    totalViewers: 0,
     activeInternships: 0,
-    ongoingInternships: 0
-  }, 
-  setCurrentTab = () => {}, 
-  filteredInternships = [], 
-  loading = false, 
-  handleEdit = () => {}, 
-  handleDelete = () => {} 
-}) {
+    ongoingInternships: 0,
+    pendingApplications: 0
+  });
+
+  const fetchStats = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/admin/stats", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (res.data.success) {
+        setStats(res.data.stats);
+      }
+    } catch (err) {
+      console.error("Failed to fetch dashboard stats:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const statsCardStyle =
+    "p-4 rounded-xl bg-neutral-900/50 border border-white/10 backdrop-blur-md";
+
+  const StatCard = ({ title, value, icon }) => (
+    <div className={statsCardStyle}>
+      <div className="flex items-center gap-4">
+        <div className="text-2xl">{icon}</div>
+        <div>
+          <p className="text-sm text-neutral-400">{title}</p>
+          <p className="text-xl text-white font-semibold">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <div className="mb-8">
@@ -23,95 +58,41 @@ export default function Dashboard({
         </h1>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatsCard 
-          title="Total Students" 
-          value={stats.totalStudents} 
+        <StatCard
+          title="Total Students"
+          value={stats.totalStudents}
           icon={<FiUsers size={24} className="text-blue-400" />}
         />
-        <StatsCard 
-          title="Total Mentors" 
-          value={stats.totalMentors} 
+        <StatCard
+          title="Total Mentors"
+          value={stats.totalMentors}
           icon={<FiUsers size={24} className="text-purple-400" />}
         />
-        <StatsCard 
-          title="Active Internships" 
-          value={stats.activeInternships} 
+        <StatCard
+          title="Total Viewers"
+          value={stats.totalViewers}
+          icon={<FiUsers size={24} className="text-pink-400" />}
+        />
+        <StatCard
+          title="Active Internships"
+          value={stats.activeInternships}
           icon={<FiBriefcase size={24} className="text-green-400" />}
         />
-        <StatsCard 
-          title="Ongoing Internships" 
-          value={stats.ongoingInternships} 
+        <StatCard
+          title="Ongoing Internships"
+          value={stats.ongoingInternships}
           icon={<FiBriefcase size={24} className="text-yellow-400" />}
         />
+        <StatCard
+          title="Pending Applications"
+          value={stats.pendingApplications}
+          icon={<FiBriefcase size={24} className="text-red-400" />}
+        />
       </div>
+
       
-      {/* Recent Internships */}
-      <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-4 md:p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl md:text-2xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
-            Recent Internships
-          </h2>
-          <button 
-            onClick={() => setCurrentTab('create')}
-            className="px-4 py-2 bg-white hover:bg-white/90 text-black rounded-lg flex items-center gap-2 text-sm"
-          >
-            <FiPlus size={16} />
-            Add New
-          </button>
-        </div>
-        
-        {loading ? (
-          <div className="text-center py-8 text-neutral-400">Loading internships...</div>
-        ) : filteredInternships.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-white/10">
-              <thead className="bg-neutral-800/50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Title</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Company</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Department</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Deadline</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Duration</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {filteredInternships.slice(0, 5).map((internship) => (
-                  <tr key={internship._id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-200">{internship.title}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.company}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.department}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">
-                      {new Date(internship.applicationDeadline).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-neutral-300">{internship.internshipDuration}</td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex space-x-2">
-                        <button 
-                          onClick={() => handleEdit(internship)}
-                          className="p-1.5 text-blue-400 hover:text-blue-300 rounded-lg hover:bg-neutral-800/50 transition-all"
-                        >
-                          <FiEdit2 size={16} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(internship._id)}
-                          className="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-neutral-800/50 transition-all"
-                        >
-                          <FiTrash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-8 text-neutral-400">No internships found</div>
-        )}
-      </div>
     </>
   );
 }
