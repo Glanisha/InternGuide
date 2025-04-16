@@ -3,9 +3,10 @@ import axios from 'axios';
 
 const MyApplications = () => {
   const [applications, setApplications] = useState([]);
+  const [filteredApplications, setFilteredApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedApplication, setSelectedApplication] = useState(null); // Changed from selectedResume
+  const [selectedApplication, setSelectedApplication] = useState(null);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -20,6 +21,10 @@ const MyApplications = () => {
           }
         );
         setApplications(response.data);
+        
+        // Filter out applications where internship is null or undefined
+        const validApplications = response.data.filter(app => app.internship);
+        setFilteredApplications(validApplications);
       } catch (err) {
         setError(err.response?.data?.error || 'Failed to fetch applications');
       } finally {
@@ -31,6 +36,7 @@ const MyApplications = () => {
   }, []);
 
   const getStatusColor = (status) => {
+    if (!status) return 'bg-neutral-800 text-neutral-300';
     switch (status.toLowerCase()) {
       case 'pending':
         return 'bg-yellow-500/20 text-yellow-400';
@@ -44,20 +50,24 @@ const MyApplications = () => {
   };
 
   const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    if (!dateStr) return 'N/A';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return 'Invalid date';
+    }
   };
 
   const handleViewResume = (application) => {
+    if (!application?.resume) {
+      setError('No resume available for this application');
+      return;
+    }
     setSelectedApplication(application);
-  };
-
-  const handleViewDetails = (internshipId) => {
-    // You can implement navigation to internship details here
-    console.log('View details for internship:', internshipId);
   };
 
   if (loading) {
@@ -76,11 +86,17 @@ const MyApplications = () => {
     );
   }
 
-  if (applications.length === 0) {
+  if (filteredApplications.length === 0) {
     return (
       <div className="bg-neutral-900/50 border border-white/10 rounded-xl p-8 text-center">
-        <h3 className="text-lg font-medium text-white mb-2">No Applications Found</h3>
-        <p className="text-neutral-400">You haven't applied to any internships yet.</p>
+        <h3 className="text-lg font-medium text-white mb-2">
+          {applications.length === 0 ? 'No Applications Found' : 'No Active Applications'}
+        </h3>
+        <p className="text-neutral-400">
+          {applications.length === 0 
+            ? 'You haven\'t applied to any internships yet.' 
+            : 'All your applications are for internships that have been deleted.'}
+        </p>
       </div>
     );
   }
@@ -89,7 +105,7 @@ const MyApplications = () => {
     <div className="space-y-4">
       <h2 className="text-2xl font-semibold text-white mb-6">My Applications</h2>
       
-      {applications.map((application) => (
+      {filteredApplications.map((application) => (
         <div 
           key={application._id} 
           className="bg-neutral-900/50 backdrop-blur-sm border border-white/10 rounded-xl p-4 hover:border-blue-500/30 transition-all"
@@ -97,8 +113,12 @@ const MyApplications = () => {
           {/* Company and Title */}
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="font-medium text-white">{application.internship.company}</h3>
-              <p className="text-sm text-neutral-300">{application.internship.title}</p>
+              <h3 className="font-medium text-white">
+                {application.internship.company}
+              </h3>
+              <p className="text-sm text-neutral-300">
+                {application.internship.title}
+              </p>
             </div>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(application.status)}`}>
               {application.status}
@@ -118,7 +138,9 @@ const MyApplications = () => {
             </div>
             <div>
               <p className="text-neutral-400">Internship Status</p>
-              <p className="text-white">{application.internship.status}</p>
+              <p className="text-white">
+                {application.internship.status}
+              </p>
             </div>
           </div>
 
@@ -127,17 +149,19 @@ const MyApplications = () => {
             <button
               onClick={() => handleViewResume(application)}
               className="px-4 py-2 text-sm bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+              disabled={!application?.resume}
             >
-              View Resume
+              {application?.resume ? 'View Resume' : 'No Resume'}
             </button>
-    
           </div>
 
           {/* Cover Letter Preview */}
           {application.coverLetter && (
             <div className="mt-4">
               <p className="text-sm text-neutral-400 mb-1">Cover Letter:</p>
-              <p className="text-sm text-white line-clamp-2">{application.coverLetter}</p>
+              <p className="text-sm text-white line-clamp-2">
+                {application.coverLetter}
+              </p>
             </div>
           )}
         </div>
@@ -157,28 +181,34 @@ const MyApplications = () => {
               </button>
             </div>
             <div className="bg-neutral-800/50 border border-dashed border-white/20 rounded-lg p-8 text-center">
-              <p className="text-blue-400 mb-2">
-                {selectedApplication.resume.split('\\').pop()}
-              </p>
-              <p className="text-sm text-neutral-400 mb-4">
-                For: {selectedApplication.internship.title} at {selectedApplication.internship.company}
-              </p>
-              <div className="mt-4 space-x-3">
-                <a 
-                  href={`http://localhost:8000/${selectedApplication.resume.replace(/\\/g, '/')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
-                >
-                  Download Resume
-                </a>
-                <button
-                  onClick={() => setSelectedApplication(null)}
-                  className="px-4 py-2 text-sm bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                >
-                  Close
-                </button>
-              </div>
+              {selectedApplication.resume ? (
+                <>
+                  <p className="text-blue-400 mb-2">
+                    {selectedApplication.resume.split('\\').pop()}
+                  </p>
+                  <p className="text-sm text-neutral-400 mb-4">
+                    For: {selectedApplication.internship.title} at {selectedApplication.internship.company}
+                  </p>
+                  <div className="mt-4 space-x-3">
+                    <a 
+                      href={`http://localhost:8000/${selectedApplication.resume.replace(/\\/g, '/')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
+                    >
+                      Download Resume
+                    </a>
+                    <button
+                      onClick={() => setSelectedApplication(null)}
+                      className="px-4 py-2 text-sm bg-white/5 hover:bg-white/10 rounded-lg transition-all"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-red-400">No resume available</p>
+              )}
             </div>
           </div>
         </div>
