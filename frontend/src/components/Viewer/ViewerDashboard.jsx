@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Home, Briefcase, Bookmark, User, Bell, Mail, Search, X, Menu as MenuIcon } from 'react-feather';
 import InternshipsPage from "./InternshipsPage";
 import SubmitRequest from './SubmitRequest';
+import SavedInternships from './SavedInternships';
 
 
 const api = axios.create({
@@ -266,38 +267,8 @@ export default function ViewerDashboard() {
 
 {currentTab === "internships" && <InternshipsPage />}
 
-            {currentTab === 'saved' && (
-              <>
-                <div className="col-span-12 mb-6">
-                  <h1 className="text-3xl md:text-4xl font-bold">Saved Internships</h1>
-                </div>
-                
-                <div className="col-span-12 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-4 md:p-6">
-                  {loading ? (
-                    <div className="text-center py-8">Loading saved internships...</div>
-                  ) : savedInternships.length === 0 ? (
-                    <div className="text-center py-8 text-gray-400">
-                      You haven't saved any internships yet.
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {internships
-                        .filter(internship => savedInternships.includes(internship._id))
-                        .map((internship) => (
-                          <InternshipCard 
-                            key={internship._id} 
-                            internship={internship} 
-                            isSaved={true}
-                            onSave={handleSaveInternship}
-                            onRemove={handleRemoveSaved}
-                            viewerMode={true}
-                          />
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
+{currentTab === "saved" && <SavedInternships />}
+
 
             
 
