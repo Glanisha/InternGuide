@@ -147,49 +147,48 @@ const FacultyMentees = () => {
             </div>
           </div>
 
-          {/* Applied Internships Section */}
           {mentee.appliedInternships?.length > 0 && (
-            <div className="mt-6">
-              <p className="font-medium text-neutral-300 mb-2">
-                Applied Internships:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {mentee.appliedInternships.map((app, i) => {
-                  let bgColor = "bg-white/5";
-                  if (app.status === "Accepted") bgColor = "bg-green-500/20";
-                  else if (app.status === "Rejected") bgColor = "bg-red-500/20";
-                  else if (app.status === "Pending")
-                    bgColor = "bg-yellow-500/20";
+  <div className="mt-6">
+    <p className="font-medium text-neutral-300 mb-2">
+      Applied Internships:
+    </p>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {mentee.appliedInternships.map((app, i) => {
+        // Skip card if internship title or company is missing
+        if (!app.internship?.title || !app.internship?.company) return null;
 
-                  return (
-                    <div key={i} className={`${bgColor} p-4 rounded-lg`}>
-                      <p className="text-white font-medium">
-                        {app.internship?.title || "Unknown"} at{" "}
-                        {app.internship?.company || "Unknown"}
-                      </p>
-                      <p className="text-sm text-neutral-300">
-                        Status: {app.status}
-                      </p>
-                      <p className="text-sm text-neutral-400">
-                        Mode: {app.internship?.mode}
-                      </p>
-                      <p className="text-sm text-neutral-400">
-                        Deadline:{" "}
-                        {app.internship?.applicationDeadline
-                          ? new Date(
-                              app.internship.applicationDeadline
-                            ).toLocaleDateString()
-                          : "N/A"}
-                      </p>
-                      <p className="text-sm text-neutral-400">
-                        {app.internship?.description}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+        let bgColor = "bg-white/5";
+        if (app.status === "Accepted") bgColor = "bg-green-500/20";
+        else if (app.status === "Rejected") bgColor = "bg-red-500/20";
+        else if (app.status === "Pending") bgColor = "bg-yellow-500/20";
+
+        return (
+          <div key={i} className={`${bgColor} p-4 rounded-lg`}>
+            <p className="text-white font-medium">
+              {app.internship.title} at {app.internship.company}
+            </p>
+            <p className="text-sm text-neutral-300">
+              Status: {app.status}
+            </p>
+            <p className="text-sm text-neutral-400">
+              Mode: {app.internship.mode}
+            </p>
+            <p className="text-sm text-neutral-400">
+              Deadline:{" "}
+              {app.internship.applicationDeadline
+                ? new Date(app.internship.applicationDeadline).toLocaleDateString()
+                : "N/A"}
+            </p>
+            <p className="text-sm text-neutral-400">
+              {app.internship.description}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+)}
+
 
           <div className="flex justify-end gap-4 pt-6">
             <button 

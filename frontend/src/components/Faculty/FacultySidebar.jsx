@@ -58,16 +58,6 @@ const FacultySidebar = ({ isMobileOpen, closeMobileSidebar }) => {
               <span>My Mentees</span>
             </NavLink>
             <NavLink
-              to="/faculty/messages"
-              onClick={closeMobileSidebar}
-              className={({ isActive }) => 
-                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
-              }
-            >
-              <FiMessageSquare size={20} />
-              <span>Messages</span>
-            </NavLink>
-            <NavLink
               to="/faculty/analytics"
               onClick={closeMobileSidebar}
               className={({ isActive }) => 
