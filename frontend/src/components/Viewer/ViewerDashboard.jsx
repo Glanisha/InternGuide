@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Home, Briefcase, Bookmark, User, Bell, Mail, Search, X, Menu as MenuIcon } from 'react-feather';
 import InternshipsPage from "./InternshipsPage";
+import SubmitRequest from './SubmitRequest';
+
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/viewer',
+  baseURL: 'http://localhost:8000/api/viewers',
   headers: {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -297,66 +299,10 @@ export default function ViewerDashboard() {
               </>
             )}
 
-            {currentTab === 'request' && (
-              <>
-                <div className="col-span-12 mb-6">
-                  <h1 className="text-3xl md:text-4xl font-bold">Submit Request</h1>
-                </div>
-                
-                <div className="col-span-12 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-800 p-4 md:p-6">
-                  <form onSubmit={handleRequestSubmit}>
-                    <div className="grid grid-cols-1 gap-4 md:gap-6">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Select Internship</label>
-                        <select
-                          name="internshipId"
-                          value={requestData.internshipId}
-                          onChange={handleInputChange}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          required
-                        >
-                          <option value="">Select an internship</option>
-                          {internships.map(internship => (
-                            <option key={internship._id} value={internship._id}>
-                              {internship.title} - {internship.company}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-1">Message to Admin</label>
-                        <textarea
-                          name="message"
-                          value={requestData.message}
-                          onChange={handleInputChange}
-                          rows={6}
-                          className="w-full bg-gray-800/50 border border-gray-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                          placeholder="Explain why you're interested in this internship and any relevant experience..."
-                          required
-                        ></textarea>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6 flex justify-end space-x-3">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentTab('dashboard')}
-                        className="px-4 py-2 bg-gray-700/80 hover:bg-gray-600/80 rounded-md transition-colors text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-4 py-2 bg-blue-600/90 hover:bg-blue-700/90 rounded-md transition-colors text-sm"
-                      >
-                        Submit Request
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </>
-            )}
+            
+
+{currentTab === "request" && <SubmitRequest />}
+
 
             {currentTab === 'profile' && (
               <>
