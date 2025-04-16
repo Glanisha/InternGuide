@@ -21,6 +21,9 @@ import AdminDashboard from "./components/Admin/Dashboard"; // Make sure this exi
 import AdminInternships from "./components/Admin/Internships"; // Renamed to avoid conflict
 import MentorAssignment from "./components/Admin/MentorAssignment";
 import AdminSettings from "./components/Admin/Settings"; // Renamed to avoid conflict
+import AdminRequestManager from "./components/Admin/AdminRequestManager"; // adjust path as needed
+
+
 
 import FacultyMentees from "./components/Faculty/FacultyMentees";
 import MenteeAnalysis from "./components/Faculty/MenteeAnalysis";
@@ -62,6 +65,7 @@ const App = () => {
             <Route path="internships" element={<AdminInternships />} />
             <Route path="mentors" element={<MentorAssignment />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="requests" element={<AdminRequestManager />} />
           </Route>
         </Route>
 
