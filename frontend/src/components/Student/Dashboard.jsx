@@ -3,6 +3,7 @@ import axios from 'axios';
 import { getBestInternshipRoute } from '../../utils';
 import MyApplications from './MyApplications';
 import HurryUpApply from './HurryUpApply';
+import StudentReviews from './StudentReviews';
 
 const Dashboard = () => {
   const [recommendedInternships, setRecommendedInternships] = useState([]);
@@ -47,6 +48,8 @@ const Dashboard = () => {
         </div>
         <HurryUpApply />
       </div>
+
+      <StudentReviews/>
 
       {/* My Applications Section */}
       <div className="bg-neutral-900/70 rounded-xl p-6 border border-white/10">

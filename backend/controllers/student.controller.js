@@ -3,7 +3,8 @@ import Student from "../models/student.model.js";
 import Chat from "../models/chat.model.js";
 import Faculty from "../models/faculty.model.js";
 import Notification from "../models/notification.model.js";
-
+import Review from "../models/review.model.js";
+import Management from "../models/management.model.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -478,5 +479,79 @@ export const getMentorDetails = async (req, res) => {
   } catch (error) {
     console.error("Error fetching mentor details:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
+
+
+//review stystem with managemnet controllers 
+
+
+
+export const submitReview = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Use userId instead of _id
+    const student = await Student.findOne({ userId });
+
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    const reviewData = {
+      student: {
+        id: student._id,
+        name: student.name,
+        department: student.department
+      },
+      ...req.body
+    };
+
+    const review = await Review.create(reviewData);
+
+    // Add to student's submitted reviews
+    await Student.findByIdAndUpdate(student._id, {
+      $push: { submittedReviews: { reviewId: review._id } }
+    });
+
+    // Add to management's received reviews
+    await Management.updateMany({}, {
+      $push: { receivedReviews: { reviewId: review._id } }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Review submitted successfully",
+      review
+    });
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    res.status(500).json({ success: false, message: "Failed to submit review" });
+  }
+};
+export const getMyReviews = async (req, res) => {
+  try {
+    const userId = req.user.id; // ID from the logged-in user token
+
+    // Find student by userId instead of _id
+    const student = await Student.findOne({ userId }).populate({
+      path: "submittedReviews.reviewId",
+      select: "-student.id" // Optional: hides student ID in the review if needed
+    });
+
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      reviews: student.submittedReviews
+    });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch reviews" });
   }
 };

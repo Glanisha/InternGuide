@@ -14,6 +14,12 @@ const StudentSchema = new mongoose.Schema(
         application: { type: mongoose.Schema.Types.ObjectId, ref: "Application" } 
       },
     ],
+    submittedReviews: [
+      {
+        reviewId: { type: mongoose.Schema.Types.ObjectId, ref: "Review" },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
     assignedMentor: { type: mongoose.Schema.Types.ObjectId, ref: "Faculty" },
     progress: [
       {

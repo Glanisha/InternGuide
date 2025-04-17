@@ -9,6 +9,8 @@ import {
   updateStudentProfile,
   sendMessage,
   getChatHistory,
+  submitReview,
+  getMyReviews,
   findBestInternship,
   generateStudentReport, getMentorDetails, getCurrentStudent
 } from "../controllers/student.controller.js";
@@ -28,6 +30,11 @@ router.get("/chat", getChatHistory);
 router.get("/best-internship", protect, findBestInternship);
 router.put("/update", protect, updateStudentProfile); 
 router.get("/report",  protect, generateStudentReport);
+
+
+
+router.post("/reviews", protect, authorizeRoles("student"),  submitReview);
+router.get("/reviews", getMyReviews);
 
 
 export default router;

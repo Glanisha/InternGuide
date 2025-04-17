@@ -3,6 +3,7 @@ import Student from '../models/student.model.js';
 import Faculty from "../models/faculty.model.js";
 import Management from "../models/management.model.js";
 import fetch from "node-fetch";
+import Review from "../models/review.model.js";
 
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -387,4 +388,146 @@ export const trackSDGContributions = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
+//lizas management controllers for review system 
+export const getReviews = async (req, res) => {
+  try {
+    const management = await Management.findOne({ userId: req.user.id }).populate({
+      path: "receivedReviews.reviewId",
+      populate: {
+        path: "student.id",
+        select: "name department"
+      }
+    });
+
+    if (!management) {
+      return res.status(404).json({ success: false, message: "Management user not found" });
+    }
+
+    const reviews = management.receivedReviews.map(item => {
+      const review = item.reviewId?.toObject?.() || {};
+      if (review.isAnonymous) {
+        review.student = { name: "Anonymous", department: "Hidden" };
+      }
+      return {
+        ...review,
+        status: item.status,
+        managementCreatedAt: item.createdAt
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      reviews
+    });
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch reviews" });
+  }
+};
+
+export const updateReviewStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["unread", "read", "archived"].includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status" });
+    }
+
+    const management = await Management.findOneAndUpdate(
+      { userId: req.user.id, "receivedReviews.reviewId": id },
+      { $set: { "receivedReviews.$.status": status } },
+      { new: true }
+    );
+
+    if (!management) {
+      return res.status(404).json({ success: false, message: "Review not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Review status updated successfully"
+    });
+  } catch (error) {
+    console.error("Error updating review status:", error);
+    res.status(500).json({ success: false, message: "Failed to update review status" });
+  }
+};
+
+export const getReviewAnalytics = async (req, res) => {
+  try {
+    const management = await Management.findOne({ userId: req.user.id })
+      .populate("receivedReviews.reviewId");
+
+    if (!management) {
+      return res.status(404).json({ success: false, message: "Management user not found" });
+    }
+
+    const reviews = management.receivedReviews.map(item => item.reviewId);
+
+    const analytics = {
+      totalReviews: reviews.length,
+      averageMentorshipRating: calculateAverage(reviews, "mentorshipRating"),
+      averageInternshipRating: calculateAverage(reviews, "internshipRating"),
+      averageSdgAlignmentRating: calculateAverage(reviews, "sdgAlignmentRating"),
+      averageIndustryRelevanceRating: calculateAverage(reviews, "industryRelevanceRating"),
+      averageOverallExperience: calculateAverage(reviews, "overallExperience"),
+      ratingDistribution: getRatingDistribution(reviews),
+      commonSuggestions: getCommonSuggestions(reviews)
+    };
+
+    res.status(200).json({
+      success: true,
+      analytics
+    });
+  } catch (error) {
+    console.error("Error fetching review analytics:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch analytics" });
+  }
+};
+
+// Helper functions
+function calculateAverage(reviews, field) {
+  const validReviews = reviews.filter(review => review[field]);
+  if (validReviews.length === 0) return 0;
+  return validReviews.reduce((sum, review) => sum + review[field], 0) / validReviews.length;
+}
+
+function getRatingDistribution(reviews) {
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  reviews.forEach(review => {
+    if (review.overallExperience) {
+      distribution[review.overallExperience]++;
+    }
+  });
+  return distribution;
+}
+
+function getCommonSuggestions(reviews) {
+  const suggestions = reviews
+    .filter(review => review.suggestions)
+    .map(review => review.suggestions);
+  
+  // Simple implementation - in production you might use NLP for better analysis
+  const wordFrequency = {};
+  suggestions.forEach(text => {
+    text.split(/\s+/).forEach(word => {
+      const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+      if (cleanWord.length > 3) { // Ignore short words
+        wordFrequency[cleanWord] = (wordFrequency[cleanWord] || 0) + 1;
+      }
+    });
+  });
+  
+  return Object.entries(wordFrequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([word, count]) => ({ word, count }));
+}
+
+
+
 
