@@ -206,7 +206,7 @@ export default function Stats() {
     <div className="p-4 md:p-6">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-300">
-          Admin Dashboard
+          Management Dashboard
         </h1>
         <p className="text-neutral-400 mt-2">Comprehensive overview of your internship program</p>
       </div>
