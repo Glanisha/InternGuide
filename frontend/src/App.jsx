@@ -14,6 +14,7 @@ import Settings from "./components/student/Settings";
 import ReportPage from "./components/student/ReportPage";
 import InternshipCard from "./components/Management/InternshipCard";
 import ViewerDashboard from "./components/Viewer/ViewerDashboard";
+import ReportPageManage from "./components/Management/ReportPageManage";
 
 // Admin components
 import AdminLayout from "./components/Admin/AdminLayout";
@@ -35,6 +36,7 @@ import MentorshipPage from "./components/Management/MentorshipPage";
 import StatsPage from "./components/Management/StatsPage";
 import InternshipPage from "./components/Management/InternshipPage";
 import SDGPage from "./components/Management/SDGPage";
+import OverallReport from "./components/Management/OverAllReport";
 
 const App = () => {
   return (
@@ -76,7 +78,7 @@ const App = () => {
           <Route path="internships" element={<InternshipPage/>} />
           <Route path="sdg" element={<SDGPage/>} />
           <Route path="mentorship" element={<MentorshipPage/>} />
-          <Route path="generate-report" element={<h2>Report Page</h2>} />
+          <Route path="reports" element={<OverallReport/>} />
         </Route>
 
 

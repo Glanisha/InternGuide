@@ -29,7 +29,8 @@ import {
   getAllFacultyWithMentees,
   getFacultyMenteesDetails,
   generateProgramMetrics,
-  trackSDGContributions
+  trackSDGContributions, 
+  generateInternshipReport
 } from "../controllers/management.controller.js";
 import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
 
@@ -42,5 +43,6 @@ router.get("/faculty/:facultyId/mentees", protect, authorizeRoles("management"),
 // Program analytics routes
 router.get("/program-metrics", protect, authorizeRoles("management"), generateProgramMetrics);
 router.get("/sdg-contributions", protect, authorizeRoles("management"), trackSDGContributions);
+router.get("/generate", protect, authorizeRoles("management"), generateInternshipReport);
 
 export default router;

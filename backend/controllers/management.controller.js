@@ -2,10 +2,139 @@ import Internship from "../models/internship.model.js";
 import Student from '../models/student.model.js';
 import Faculty from "../models/faculty.model.js";
 import Management from "../models/management.model.js";
+import fetch from "node-fetch";
+
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_API_URL = process.env.GEMINI_API_URL;
+const INTERNAL_API_URL = 'http://localhost:8000/api/admin/stats';
 
+async function fetchStatsData(authToken) {
+    try {
+        const response = await fetch(INTERNAL_API_URL, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Stats API responded with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.success ? data.stats : null;
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        throw error;
+    }
+}
+
+async function generateGeminiReport(prompt) {
+    try {
+        const response = await fetch(
+            `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                })
+            }
+        );
+
+        const result = await response.json();
+        return result.candidates?.[0]?.content?.parts?.[0]?.text || "No report generated";
+    } catch (error) {
+        console.error("Gemini API error:", error);
+        throw error;
+    }
+}
+
+export const generateInternshipReport = async (req, res) => {
+    try {
+        // Get auth token from the incoming request
+        const authToken = req.headers.authorization?.split(' ')[1];
+        if (!authToken) {
+            return res.status(401).json({
+                success: false,
+                message: "Authorization token required"
+            });
+        }
+
+        // First fetch the stats data
+        const statsData = await fetchStatsData(authToken);
+        if (!statsData) {
+            return res.status(500).json({
+                success: false,
+                message: "Failed to fetch statistics data"
+            });
+        }
+
+        // Construct the prompt with the fetched data
+        const prompt = `
+        Generate a comprehensive internship program report with these metrics:
+
+        **Program Overview**
+        - Students: ${statsData.totalStudents || 0}
+        - Mentors: ${statsData.totalMentors || 0}
+        - Active Internships: ${statsData.activeInternships || 0}
+        - Participation Rate: ${statsData.participationRate || "0%"}
+
+        **Industry Collaboration**
+        - Partner Companies: ${statsData.industryCollaboration?.totalCompanies || 0}
+        ${statsData.industryCollaboration?.topCompanies?.length > 0 
+            ? "- Top Companies:\n" + 
+              statsData.industryCollaboration.topCompanies.slice(0, 3)
+                .map(c => `  • ${c.name}: ${c.count} internships`).join('\n')
+            : "- No company data available"}
+
+        **SDG Alignment**
+        ${statsData.sdgAnalytics?.sdgDistribution?.length > 0
+            ? "- Top SDGs:\n" + 
+              statsData.sdgAnalytics.sdgDistribution.slice(0, 3)
+                .map(s => `  • ${s.sdg}: ${s.count}`).join('\n')
+            : "- No SDG data available"}
+
+        **Placement Statistics**
+        - Placement Rate: ${statsData.placementAnalytics?.placementRate || "0%"}
+        ${statsData.placementAnalytics?.popularSkills?.length > 0
+            ? "- In-Demand Skills:\n" + 
+              statsData.placementAnalytics.popularSkills.slice(0, 3)
+                .map(s => `  • ${s.skill}: ${s.count}`).join('\n')
+            : "- No skill data available"}
+
+        Provide 3 key recommendations for program improvement.
+        Format with clear headings and bullet points.
+        `;
+
+        // Generate the report with Gemini
+        const generatedReport = await generateGeminiReport(prompt);
+
+        res.json({
+            success: true,
+            report: generatedReport,
+            metrics: {
+                totalStudents: statsData.totalStudents,
+                totalMentors: statsData.totalMentors,
+                participationRate: statsData.participationRate,
+                placementRate: statsData.placementAnalytics?.placementRate
+            }
+        });
+
+    } catch (error) {
+        console.error("Report generation error:", error);
+        res.status(500).json({
+            success: false,
+            message: error.message || "Internal server error during report generation"
+        });
+    }
+};
 // Get all faculty with their mentees
 export const getAllFacultyWithMentees = async (req, res) => {
   try {
