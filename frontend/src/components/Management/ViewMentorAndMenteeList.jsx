@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import {menteeAndMentorListRoute} from '../../utils';
 
 const ViewMentorAndMenteeList = () => {
   const [facultyList, setFacultyList] = useState([]);
@@ -11,7 +12,7 @@ const ViewMentorAndMenteeList = () => {
     const fetchFacultyData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8000/api/management/faculty', {
+        const response = await axios.get(menteeAndMentorListRoute, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

@@ -12,9 +12,7 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Clear previous errors
       setError('');
-      
       const response = await axios.post(loginRoute, {
         email,
         password,
@@ -33,12 +31,9 @@ const LoginForm = () => {
       if (!token || !role) {
         throw new Error('Authentication data missing in response');
       }
-  
-      // Store token and user data
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
-  
-      // Navigate based on role
+      
       switch (role.toLowerCase()) {
         case 'student':
           navigate('/student');
@@ -50,7 +45,7 @@ const LoginForm = () => {
           navigate('/admin-dashboard');
           break;
         case 'management':
-          navigate('/management');
+          navigate('/management/dashboard');
           break;
         case 'viewer':
           navigate('/viewer-dashboard');
@@ -65,7 +60,6 @@ const LoginForm = () => {
   };
   return (
     <div className="min-h-screen bg-black w-full flex items-center justify-center p-4">
-      {/* Glass effect container */}
       <div className="w-full max-w-md backdrop-blur-sm bg-white/5 rounded-2xl border border-white/10 p-8 shadow-2xl shadow-blue-500/10">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-normal pb-4 text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-100 to-neutral-300">

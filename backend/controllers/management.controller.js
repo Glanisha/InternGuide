@@ -3,34 +3,9 @@ import Student from '../models/student.model.js';
 import Faculty from "../models/faculty.model.js";
 import Management from "../models/management.model.js";
 import fetch from "node-fetch";
-import Review from "../models/review.model.js";
-
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_API_URL = process.env.GEMINI_API_URL;
-const INTERNAL_API_URL = 'http://localhost:8000/api/admin/stats';
-
-async function fetchStatsData(authToken) {
-    try {
-        const response = await fetch(INTERNAL_API_URL, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`Stats API responded with status ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data.success ? data.stats : null;
-    } catch (error) {
-        console.error('Error fetching stats:', error);
-        throw error;
-    }
-}
 
 async function generateGeminiReport(prompt) {
     try {
@@ -59,7 +34,6 @@ async function generateGeminiReport(prompt) {
 
 export const generateInternshipReport = async (req, res) => {
     try {
-        // Get auth token from the incoming request
         const authToken = req.headers.authorization?.split(' ')[1];
         if (!authToken) {
             return res.status(401).json({
@@ -68,7 +42,6 @@ export const generateInternshipReport = async (req, res) => {
             });
         }
 
-        // First fetch the stats data
         const statsData = await fetchStatsData(authToken);
         if (!statsData) {
             return res.status(500).json({
@@ -77,7 +50,6 @@ export const generateInternshipReport = async (req, res) => {
             });
         }
 
-        // Construct the prompt with the fetched data
         const prompt = `
         Generate a comprehensive internship program report with these metrics:
 
@@ -114,7 +86,6 @@ export const generateInternshipReport = async (req, res) => {
         Format with clear headings and bullet points.
         `;
 
-        // Generate the report with Gemini
         const generatedReport = await generateGeminiReport(prompt);
 
         res.json({
@@ -136,7 +107,7 @@ export const generateInternshipReport = async (req, res) => {
         });
     }
 };
-// Get all faculty with their mentees
+
 export const getAllFacultyWithMentees = async (req, res) => {
   try {
     const faculty = await Faculty.find()
@@ -154,7 +125,6 @@ export const getAllFacultyWithMentees = async (req, res) => {
   }
 };
 
-// Get detailed mentee information for a specific faculty
 export const getFacultyMenteesDetails = async (req, res) => {
   try {
     const { facultyId } = req.params;
@@ -177,12 +147,10 @@ export const getFacultyMenteesDetails = async (req, res) => {
   }
 };
 
-// Generate program success metrics report
 export const generateProgramMetrics = async (req, res) => {
   try {
     const userId = req.user?.id;
 
-    // Get all students with their internships and mentors
     const students = await Student.find()
       .populate({
         path: "appliedInternships.internship",
@@ -191,20 +159,17 @@ export const generateProgramMetrics = async (req, res) => {
       .populate("assignedMentor", "name email department")
       .lean();
 
-    // Get all faculty with their mentoring stats
     const faculty = await Faculty.find()
       .select("name email department assignedStudents mentoringCapacity")
       .lean();
 
-    // Calculate basic metrics
     const totalStudents = students.length;
     const totalFaculty = faculty.length;
     const internshipsCompleted = students.reduce((acc, student) => {
       const internships = student.appliedInternships || [];
       return acc + internships.filter(i => i.status === "Accepted").length;
     }, 0);
-    
-    // Get average mentor rating
+
     const ratings = students.flatMap(s => 
       s.feedback?.map(f => f.rating) || []
     );
@@ -214,16 +179,13 @@ export const generateProgramMetrics = async (req, res) => {
 
       let prompt = `Generate a comprehensive program success metrics report for the institutional internship program with focus on these management priorities:\n\n`;
 
-      // Program Overview Section (Covering Institution-Wide Overview)
       prompt += `1. Program Overview:\n`;
       prompt += `- Total Students: ${totalStudents}\n`;
       prompt += `- Total Faculty Mentors: ${totalFaculty}\n`;
       prompt += `- Internship Participation Rate: ${((internshipsCompleted/totalStudents)*100).toFixed(2)}%\n`;
       prompt += `- Average Mentor Rating: ${averageRating}/5\n\n`;
-      
-      // SDG Contribution Analysis (Covering SDG Contribution Tracking)
+
       prompt += `2. SDG Alignment Analysis:\n`;
-      // Extract SDG data from internships
       const sdgCounts = {};
       students.forEach(student => {
         student.appliedInternships?.forEach(internship => {
@@ -243,11 +205,10 @@ export const generateProgramMetrics = async (req, res) => {
       } else {
         prompt += `No SDG data available for current internships.\n`;
       }
-      
-      // Mentorship Effectiveness (Covering Faculty Mentorship Assessment)
+   
       prompt += `\n3. Mentorship Effectiveness:\n`;
       prompt += `- Average mentees per mentor: ${(totalStudents/totalFaculty).toFixed(1)}\n`;
-      // Calculate mentorship load distribution
+
       const mentorLoads = faculty.map(f => f.assignedStudents?.length || 0);
       const maxLoad = Math.max(...mentorLoads);
       const minLoad = Math.min(...mentorLoads);

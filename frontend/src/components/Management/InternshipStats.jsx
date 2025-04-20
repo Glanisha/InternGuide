@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { FiBriefcase, FiTrendingUp, FiAward } from "react-icons/fi";
 
+
 export default function InternshipStats() {
   const [stats, setStats] = useState({
     totalInternships: 0,
