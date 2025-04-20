@@ -21,7 +21,7 @@ import feedbackRoutes from "./routes/feedback.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
 import viewerRoutes from "./routes/viewer.routes.js"
 import managementRoutes from "./routes/management.routes.js";
-
+import { setupReminderCronJob } from './utils/internshipReminders.js';
 
 dotenv.config();
 
@@ -47,7 +47,6 @@ db.once('open', () => {
     console.log('Connected to MongoDB');
 });
 
-// Create HTTP server for Express and Socket.io
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
@@ -118,7 +117,8 @@ io.on("connection", async (socket) => {
   }
 });
 
-// API Routes
+setupReminderCronJob();
+
 app.use("/api/auth", authRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/internships", internshipRoutes);
@@ -129,7 +129,6 @@ app.use("/api/applications", applicationRoutes);
 app.use("/api/viewers", viewerRoutes);
 app.use('/api/management', managementRoutes);
 
-// Start the server
 server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
