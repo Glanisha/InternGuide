@@ -6,7 +6,7 @@ const ManagementReviews = () => {
   const [visibleCount, setVisibleCount] = useState(5);
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem('token'); // your Bearer token
+  const token = localStorage.getItem('token');
 
   const fetchReviews = async () => {
     try {
