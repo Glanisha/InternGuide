@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../firebase.config';
 
 const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
   const [coverLetter, setCoverLetter] = useState('');
   const [resume, setResume] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,19 +22,40 @@ const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
     setError(null);
 
     try {
-      const formData = new FormData();
-      formData.append('resume', resume);
-      formData.append('coverLetter', coverLetter);
+      // Upload to Firebase Storage
+      const storageRef = ref(storage, `resumes/${internship._id}/${Date.now()}_${resume.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, resume);
 
-      const token = localStorage.getItem('token'); // Assuming you store JWT token here
-      
+      // Wait for upload to complete
+      const snapshot = await new Promise((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            reject(error);
+          },
+          () => resolve(uploadTask.snapshot)
+        );
+      });
+
+      // Get download URL
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      // Send application data to your backend
+      const token = localStorage.getItem('token');
       const response = await axios.post(
         `http://localhost:8000/api/applications/${internship._id}/apply`,
-        formData,
+        {
+          coverLetter,
+          resumeUrl: downloadURL
+        },
         {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -39,9 +63,10 @@ const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
       onSubmitSuccess(response.data);
       onClose();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to submit application');
+      setError(err.message || 'Failed to submit application');
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -56,6 +81,7 @@ const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
             <button 
               onClick={onClose}
               className="text-neutral-400 hover:text-white"
+              disabled={isSubmitting}
             >
               ✕
             </button>
@@ -97,6 +123,7 @@ const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
                 className="w-full bg-neutral-800 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-blue-500 focus:ring-blue-500"
                 rows={5}
                 placeholder="Explain why you're a good fit for this position..."
+                disabled={isSubmitting}
               />
             </div>
 
@@ -106,7 +133,7 @@ const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
               </label>
               <div className="flex items-center">
                 <label className="flex-1 cursor-pointer">
-                  <div className="border border-dashed border-white/20 rounded-lg p-4 text-center hover:bg-neutral-800/50 transition-colors">
+                  <div className={`border border-dashed ${resume ? 'border-blue-500/50' : 'border-white/20'} rounded-lg p-4 text-center hover:bg-neutral-800/50 transition-colors`}>
                     {resume ? (
                       <p className="text-blue-400">{resume.name}</p>
                     ) : (
@@ -121,6 +148,7 @@ const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
                     onChange={(e) => setResume(e.target.files[0])}
                     className="hidden"
                     accept=".pdf,application/pdf"
+                    disabled={isSubmitting}
                   />
                 </label>
                 {resume && (
@@ -128,12 +156,28 @@ const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
                     type="button"
                     onClick={() => setResume(null)}
                     className="ml-2 text-sm text-red-400 hover:text-red-300"
+                    disabled={isSubmitting}
                   >
                     Remove
                   </button>
                 )}
               </div>
             </div>
+
+            {/* Upload Progress */}
+            {isSubmitting && uploadProgress > 0 && (
+              <div className="mb-4">
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    className="bg-blue-600 h-2.5 rounded-full" 
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-sm text-neutral-400 mt-1">
+                  Uploading: {Math.round(uploadProgress)}% complete
+                </p>
+              </div>
+            )}
 
             {error && (
               <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-red-400 text-sm">
@@ -153,7 +197,7 @@ const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
               <button
                 type="submit"
                 className="px-4 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all flex items-center"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !resume}
               >
                 {isSubmitting ? (
                   <>
@@ -161,7 +205,7 @@ const ApplicationForm = ({ internship, onClose, onSubmitSuccess }) => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Submitting...
+                    {uploadProgress < 100 ? 'Uploading...' : 'Submitting...'}
                   </>
                 ) : 'Submit Application'}
               </button>

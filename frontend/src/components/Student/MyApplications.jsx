@@ -170,9 +170,11 @@ const MyApplications = () => {
       {/* Resume Modal */}
       {selectedApplication && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-          <div className="bg-neutral-900/90 backdrop-blur-sm border border-white/10 rounded-xl max-w-2xl w-full p-6">
+          <div className="bg-neutral-900/90 backdrop-blur-sm border border-white/10 rounded-xl max-w-4xl w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-white">Uploaded Resume</h3>
+              <h3 className="text-lg font-semibold text-white">
+                Resume for {selectedApplication.internship.title}
+              </h3>
               <button 
                 onClick={() => setSelectedApplication(null)}
                 className="text-neutral-400 hover:text-white"
@@ -180,34 +182,33 @@ const MyApplications = () => {
                 ✕
               </button>
             </div>
-            <div className="bg-neutral-800/50 border border-dashed border-white/20 rounded-lg p-8 text-center">
+            
+            <div className="h-[80vh]">
               {selectedApplication.resume ? (
                 <>
-                  <p className="text-blue-400 mb-2">
-                    {selectedApplication.resume.split('\\').pop()}
-                  </p>
-                  <p className="text-sm text-neutral-400 mb-4">
-                    For: {selectedApplication.internship.title} at {selectedApplication.internship.company}
-                  </p>
-                  <div className="mt-4 space-x-3">
+                  {/* Option 1: PDF Viewer */}
+                  <iframe 
+                    src={`https://docs.google.com/gview?url=${encodeURIComponent(selectedApplication.resume)}&embedded=true`}
+                    className="w-full h-full border border-white/10 rounded-lg"
+                    frameBorder="0"
+                  ></iframe>
+                  
+                  {/* Option 2: Direct Download Link */}
+                  <div className="mt-4 text-center">
                     <a 
-                      href={`http://localhost:8000/${selectedApplication.resume.replace(/\\/g, '/')}`}
+                      href={selectedApplication.resume}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
+                      className="px-4 py-2 text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all inline-block"
                     >
-                      Download Resume
+                      Open in New Tab
                     </a>
-                    <button
-                      onClick={() => setSelectedApplication(null)}
-                      className="px-4 py-2 text-sm bg-white/5 hover:bg-white/10 rounded-lg transition-all"
-                    >
-                      Close
-                    </button>
                   </div>
                 </>
               ) : (
-                <p className="text-red-400">No resume available</p>
+                <div className="bg-neutral-800/50 border border-dashed border-white/20 rounded-lg p-8 text-center">
+                  <p className="text-red-400">No resume available</p>
+                </div>
               )}
             </div>
           </div>

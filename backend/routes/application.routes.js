@@ -12,13 +12,14 @@ import { applicationUpload } from "../middlewares/upload.middleware.js"; // Chan
 
 const router = express.Router();
 
+// routes/application.routes.js
 router.post(
   "/:internshipId/apply",
   protect,
   authorizeRoles("student"),
-  applicationUpload, // Use our custom middleware
-  submitApplication
+  submitApplication // Removed applicationUpload middleware
 );
+
 router.get(
   "/my-applications",
   protect,
