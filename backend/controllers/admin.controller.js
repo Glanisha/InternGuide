@@ -6,6 +6,9 @@ import Request from "../models/request.model.js";
 import Internship from "../models/internship.model.js";
 import Application from "../models/application.model.js";
 import Viewer from "../models/viewer.model.js";
+import ViewerMentor from "../models/viewerMentor.model.js";
+import User from '../models/user.model.js';
+
 
 
 export const assignMentors = async (req, res) => {
@@ -57,10 +60,18 @@ export const confirmMentors = async (req, res) => {
   }
 };
 
-// Fetch all pending requests
+// Fetch all pending requests, optionally filter by requestType
 export const getPendingRequests = async (req, res) => {
+  const { requestType } = req.query; // Accept filter as query param
+
   try {
-    const requests = await Request.find({ status: "pending" }).populate("viewerId");
+    // If a specific requestType is provided, filter by that type
+    const filter = { status: "pending" };
+    if (requestType) {
+      filter.requestType = requestType; // Will filter by the requestType if provided
+    }
+
+    const requests = await Request.find(filter).populate("viewerId");
     res.json({ requests });
   } catch (error) {
     console.error("Error fetching pending requests:", error);
@@ -68,53 +79,107 @@ export const getPendingRequests = async (req, res) => {
   }
 };
 
+
 // Approve a request
+
 export const approveRequest = async (req, res) => {
   const { requestId } = req.params;
 
   try {
-    // Find the request
-    const request = await Request.findById(requestId);
+    // Find the request and populate viewer
+    const request = await Request.findById(requestId).populate('viewerId');
 
     if (!request) {
       return res.status(404).json({ error: "Request not found" });
     }
 
-    // Create the internship from the request details
-    const newInternship = new Internship({
-      title: request.internshipDetails.title,
-      company: request.internshipDetails.company,
-      description: request.internshipDetails.description,
-      role: request.internshipDetails.role,
-      requirements: request.internshipDetails.requirements,
-      department: request.internshipDetails.department,
-      sdgGoals: request.internshipDetails.sdgGoals,
-      programOutcomes: request.internshipDetails.programOutcomes,
-      educationalObjectives: request.internshipDetails.educationalObjectives,
-      location: request.internshipDetails.location,
-      mode: request.internshipDetails.mode,
-      applicationDeadline: request.internshipDetails.applicationDeadline,
-      internshipDuration: request.internshipDetails.internshipDuration,
-      stipend: request.internshipDetails.stipend,
-      status: "Open", // Internship status is set to "Open"
-    });
-
-    // Save the new internship
-    const savedInternship = await newInternship.save();
-
-    // Update the request status to approved
+    // Mark request as approved
     request.status = "approved";
     await request.save();
 
-    res.json({
-      message: "Internship request approved and internship created",
-      internship: savedInternship,
-    });
+    // Handle internship request
+    if (request.requestType === "internship") {
+      const newInternship = new Internship({
+        title: request.internshipDetails.title,
+        company: request.internshipDetails.company,
+        description: request.internshipDetails.description,
+        role: request.internshipDetails.role,
+        requirements: request.internshipDetails.requirements,
+        department: request.internshipDetails.department,
+        sdgGoals: request.internshipDetails.sdgGoals,
+        programOutcomes: request.internshipDetails.programOutcomes,
+        educationalObjectives: request.internshipDetails.educationalObjectives,
+        location: request.internshipDetails.location,
+        mode: request.internshipDetails.mode,
+        applicationDeadline: request.internshipDetails.applicationDeadline,
+        internshipDuration: request.internshipDetails.internshipDuration,
+        stipend: request.internshipDetails.stipend,
+        status: "Open",
+      });
+
+      const savedInternship = await newInternship.save();
+
+      return res.json({
+        message: "Internship request approved and internship created",
+        internship: savedInternship,
+      });
+    }
+
+    // Handle become-mentor request
+    else if (request.requestType === "become-mentor") {
+      const viewer = request.viewerId;
+
+      if (!viewer) {
+        return res.status(404).json({ error: "Viewer not found" });
+      }
+
+      // Find associated user
+      const user = await User.findById(viewer._id);
+      if (!user) {
+        return res.status(404).json({ error: "Associated user not found" });
+      }
+
+      // Extract name/email/interests
+      const name = request.mentorDetails?.name || viewer.name;
+      const email = request.mentorDetails?.email || viewer.email;
+
+      let interests = request.mentorDetails?.interests?.length
+        ? request.mentorDetails.interests
+        : viewer.interests || [];
+
+      const viewerMentor = new ViewerMentor({
+        userId: user._id,
+        viewerId: viewer._id,
+        name,
+        email,
+        interests,
+      });
+
+      const savedMentor = await viewerMentor.save();
+
+      return res.json({
+        message: "Mentor request approved. Viewer is now a mentor.",
+        mentor: savedMentor,
+      });
+    }
+
+    // Handle message request
+    else if (request.requestType === "message") {
+      return res.json({
+        message: "Message request approved successfully.",
+      });
+    }
+
+    // Unknown request type
+    else {
+      return res.status(400).json({ error: "Unknown request type" });
+    }
   } catch (error) {
     console.error("Error approving request:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 // Reject a request
 export const rejectRequest = async (req, res) => {

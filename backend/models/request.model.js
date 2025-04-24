@@ -7,6 +7,12 @@ const RequestSchema = new mongoose.Schema(
       ref: "Viewer",
       required: true,
     },
+    message: String,
+  requestType: {
+    type: String,
+    enum: ['message', 'internship', 'become-mentor'],
+    required: true
+  },
     internshipDetails: {
       title: { type: String },
       company: { type: String },
@@ -27,7 +33,11 @@ const RequestSchema = new mongoose.Schema(
       internshipDuration: { type: String },
       stipend: { type: String },
     },
-    message: { type: String, required: true },
+    mentorDetails: {
+      name: String,
+      email: String, 
+      interests: [String]
+    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],

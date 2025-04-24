@@ -6,9 +6,14 @@ import Request from '../models/request.model.js';
 // Get viewer profile
 export const getViewerProfile = async (req, res) => {
   try {
-    const viewer = await Viewer.findById(req.user.id)
-      .populate('savedInternships');
-    if (!viewer) return res.status(404).json({ message: 'Viewer not found' });
+    const viewer = await Viewer.findOne({ userId: req.user._id })
+      .populate('savedInternships')
+      .populate('userId');
+
+    if (!viewer) {
+      return res.status(404).json({ message: 'Viewer not found' });
+    }
+
     res.status(200).json(viewer);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -19,11 +24,16 @@ export const getViewerProfile = async (req, res) => {
 export const updateViewerProfile = async (req, res) => {
   try {
     const { name, email, interests } = req.body;
-    const updatedViewer = await Viewer.findByIdAndUpdate(
-      req.user.id,
+    const updatedViewer = await Viewer.findOneAndUpdate(
+      { userId: req.user._id },
       { name, email, interests },
       { new: true }
     );
+    
+    if (!updatedViewer) {
+      return res.status(404).json({ message: 'Viewer not found' });
+    }
+    
     res.status(200).json(updatedViewer);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -54,7 +64,7 @@ export const getInternshipDetails = async (req, res) => {
 // Save internship to viewer's profile
 export const saveInternship = async (req, res) => {
   try {
-    const viewer = await Viewer.findById(req.user.id);
+    const viewer = await Viewer.findOne({ userId: req.user._id });
     if (!viewer) return res.status(404).json({ message: 'Viewer not found' });
 
     if (!viewer.savedInternships.includes(req.params.id)) {
@@ -71,7 +81,7 @@ export const saveInternship = async (req, res) => {
 // Remove saved internship
 export const removeSavedInternship = async (req, res) => {
   try {
-    const viewer = await Viewer.findById(req.user.id);
+    const viewer = await Viewer.findOne({ userId: req.user._id });
     if (!viewer) return res.status(404).json({ message: 'Viewer not found' });
 
     viewer.savedInternships = viewer.savedInternships.filter(
@@ -85,15 +95,24 @@ export const removeSavedInternship = async (req, res) => {
   }
 };
 
-//Viewer submits request
+// Viewer submits request
 export const submitRequest = async (req, res) => {
   try {
-    const viewerId = req.user.id;
-    const { internshipDetails, message } = req.body;
+    const viewer = await Viewer.findOne({ userId: req.user._id });
+    if (!viewer) return res.status(404).json({ message: 'Viewer not found' });
+
+    const viewerId = viewer._id; // Use the actual viewer document ID
+    const { requestType, internshipDetails, message } = req.body;
+
+    // Check if the requestType is provided
+    if (!requestType) {
+      return res.status(400).json({ message: 'Request type is required' });
+    }
 
     // Create the request object dynamically
     const newRequest = new Request({
       viewerId,
+      requestType, // Add the requestType field
       message,
       ...(internshipDetails && Object.keys(internshipDetails).length > 0 && { internshipDetails })
     });
@@ -113,12 +132,13 @@ export const submitRequest = async (req, res) => {
 
 
 
-
-
 // Get viewer's submitted requests
 export const getViewerRequests = async (req, res) => {
   try {
-    const requests = await Request.find({ viewerId: req.user.id })
+    const viewer = await Viewer.findOne({ userId: req.user._id });
+    if (!viewer) return res.status(404).json({ message: 'Viewer not found' });
+    
+    const requests = await Request.find({ viewerId: viewer._id })
       .sort({ createdAt: -1 });
 
     res.status(200).json(requests);
