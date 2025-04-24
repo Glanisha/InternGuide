@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiFilter, FiArrowLeft } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiFilter, FiArrowLeft, FiUsers } from 'react-icons/fi';
 import InternshipForm from './InternshipForm';
+import CoverLetterModal from './CoverLetterModal';
 
 const AdminInternships = () => {
   const [internships, setInternships] = useState([]);
@@ -13,6 +14,10 @@ const AdminInternships = () => {
   const [editMode, setEditMode] = useState(false);
   const [currentInternship, setCurrentInternship] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [viewingApplications, setViewingApplications] = useState(false);
+  const [currentApplications, setCurrentApplications] = useState([]);
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const [showCoverLetterModal, setShowCoverLetterModal] = useState(false);
 
   // Create axios instance with auth headers
   const api = axios.create({
@@ -59,6 +64,56 @@ const AdminInternships = () => {
 
     fetchInternships();
   }, []);
+
+  // Fetch applications for a specific internship
+  const fetchApplications = async (internshipId) => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/applications/internship/${internshipId}`);
+      setCurrentApplications(response.data);
+      setViewingApplications(true);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to fetch applications');
+      console.error('Error fetching applications:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // View full application details
+  const viewApplicationDetails = async (applicationId) => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/applications/admin/${applicationId}/full`);
+      setSelectedApplication(response.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to fetch application details');
+      console.error('Error fetching application details:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update application status
+  const updateApplicationStatus = async (applicationId, status) => {
+    try {
+      setLoading(true);
+      await api.patch(`/applications/admin/${applicationId}/status`, { status });
+      // Refresh the applications list
+      const response = await api.get(`/applications/internship/${selectedApplication.internship._id}`);
+      setCurrentApplications(response.data);
+      // Also update the selected application if it's the one being viewed
+      if (selectedApplication && selectedApplication._id === applicationId) {
+        const updatedApp = response.data.find(app => app._id === applicationId);
+        setSelectedApplication(updatedApp);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update application status');
+      console.error('Error updating application status:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter internships based on search term and filters
   const filteredInternships = internships.filter(internship => {
@@ -159,6 +214,15 @@ const AdminInternships = () => {
     setFormData(initialFormData);
   };
 
+  const handleBackToInternships = () => {
+    setViewingApplications(false);
+    setSelectedApplication(null);
+  };
+
+  const handleBackToApplications = () => {
+    setSelectedApplication(null);
+  };
+
   if (editMode) {
     return (
       <div className="p-6">
@@ -179,6 +243,240 @@ const AdminInternships = () => {
           isSubmitting={isSubmitting}
           error={error}
         />
+      </div>
+    );
+  }
+
+  if (selectedApplication) {
+    return (
+      <div className="p-6">
+        <button
+          onClick={handleBackToApplications}
+          className="flex items-center text-neutral-400 hover:text-white mb-6 transition-colors"
+        >
+          <FiArrowLeft className="mr-2" />
+          Back to Applications
+        </button>
+
+        <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 p-6">
+          <h2 className="text-2xl font-medium mb-6">
+            Application for {selectedApplication.internship.title} at {selectedApplication.internship.company}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-neutral-800/50 p-4 rounded-lg">
+              <h3 className="text-lg font-medium mb-4">Application Details</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-neutral-400">Status</p>
+                  <p className="capitalize">{selectedApplication.status.toLowerCase()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-neutral-400">Application Date</p>
+                  <p>{new Date(selectedApplication.applicationDate).toLocaleString()}</p>
+                </div>
+                {selectedApplication.decisionDate && (
+                  <div>
+                    <p className="text-sm text-neutral-400">Decision Date</p>
+                    <p>{new Date(selectedApplication.decisionDate).toLocaleString()}</p>
+                  </div>
+                )}
+                {selectedApplication.feedback?.fromAdmin && (
+                  <div>
+                    <p className="text-sm text-neutral-400">Admin Feedback</p>
+                    <p>{selectedApplication.feedback.fromAdmin}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-neutral-800/50 p-4 rounded-lg">
+              <h3 className="text-lg font-medium mb-4">Documents</h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-neutral-400">Resume</p>
+                  <a 
+                    href={selectedApplication.resume} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                  >
+                    View Resume
+                  </a>
+                </div>
+                {selectedApplication.coverLetter && (
+  <div>
+    <p className="text-sm text-neutral-400">Cover Letter</p>
+    <button
+      onClick={() => setShowCoverLetterModal(true)}
+      className="text-blue-400 hover:underline cursor-pointer"
+    >
+      View Cover Letter
+    </button>
+  </div>
+)}
+
+{showCoverLetterModal && (
+  <CoverLetterModal
+    content={selectedApplication.coverLetter}
+    onClose={() => setShowCoverLetterModal(false)}
+  />
+)}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-neutral-800/50 p-4 rounded-lg mb-8">
+            <h3 className="text-lg font-medium mb-4">Student Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-neutral-400">Name</p>
+                <p>{selectedApplication.student.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-neutral-400">Email</p>
+                <p>{selectedApplication.student.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-neutral-400">Department</p>
+                <p>{selectedApplication.student.department}</p>
+              </div>
+              <div>
+                <p className="text-sm text-neutral-400">CGPA</p>
+                <p>{selectedApplication.student.cgpa || 'Not specified'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-neutral-400">Phone</p>
+                <p>{selectedApplication.student.phoneNumber || 'Not specified'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-neutral-400">Skills</p>
+                <p>{selectedApplication.student.skills?.join(', ') || 'Not specified'}</p>
+              </div>
+              {selectedApplication.student.linkedinProfile && (
+                <div>
+                  <p className="text-sm text-neutral-400">LinkedIn</p>
+                  <a 
+                    href={selectedApplication.student.linkedinProfile} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                  >
+                    View Profile
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex space-x-4">
+            <button
+              onClick={() => updateApplicationStatus(selectedApplication._id, 'Accepted')}
+              className={`px-4 py-2 rounded-lg ${selectedApplication.status === 'Accepted' ? 'bg-green-700' : 'bg-green-600 hover:bg-green-700'}`}
+              disabled={selectedApplication.status === 'Accepted'}
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => updateApplicationStatus(selectedApplication._id, 'Rejected')}
+              className={`px-4 py-2 rounded-lg ${selectedApplication.status === 'Rejected' ? 'bg-red-700' : 'bg-red-600 hover:bg-red-700'}`}
+              disabled={selectedApplication.status === 'Rejected'}
+            >
+              Reject
+            </button>
+            <button
+              onClick={() => updateApplicationStatus(selectedApplication._id, 'Under Review')}
+              className={`px-4 py-2 rounded-lg ${selectedApplication.status === 'Under Review' ? 'bg-blue-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+              disabled={selectedApplication.status === 'Under Review'}
+            >
+              Mark as Under Review
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (viewingApplications) {
+    return (
+      <div className="p-6">
+        <button
+          onClick={handleBackToInternships}
+          className="flex items-center text-neutral-400 hover:text-white mb-6 transition-colors"
+        >
+          <FiArrowLeft className="mr-2" />
+          Back to Internships
+        </button>
+
+        <h2 className="text-2xl font-medium mb-6">
+          Applications for {currentApplications[0]?.internship?.title || 'Internship'}
+        </h2>
+
+        {error && (
+          <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+          {loading ? (
+            <div className="text-center py-12 text-neutral-400">Loading applications...</div>
+          ) : currentApplications.length === 0 ? (
+            <div className="text-center py-12 text-neutral-400">
+              No applications found for this internship
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-white/10">
+                <thead className="bg-neutral-800/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Student</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Department</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Applied On</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  {currentApplications.map((application) => (
+                    <tr key={application._id} className="hover:bg-neutral-800/30 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-neutral-200">{application.student.name}</div>
+                        <div className="text-xs text-neutral-400 mt-1">
+                          {application.student.email}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                        {application.student.department}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          application.status === 'Accepted' ? 'bg-green-900/50 text-green-400' :
+                          application.status === 'Rejected' ? 'bg-red-900/50 text-red-400' :
+                          application.status === 'Under Review' ? 'bg-blue-900/50 text-blue-400' :
+                          'bg-yellow-900/50 text-yellow-400'
+                        }`}>
+                          {application.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                        {new Date(application.applicationDate).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button
+                          onClick={() => viewApplicationDetails(application._id)}
+                          className="text-blue-400 hover:text-blue-300 px-3 py-1 rounded bg-neutral-800/50 hover:bg-neutral-800 transition-all"
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -299,6 +597,13 @@ const AdminInternships = () => {
                           title="Delete"
                         >
                           <FiTrash2 size={18} />
+                        </button>
+                        <button
+                          onClick={() => fetchApplications(internship._id)}
+                          className="text-green-400 hover:text-green-300 p-1.5 rounded hover:bg-neutral-800/50 transition-all"
+                          title="View Applications"
+                        >
+                          <FiUsers size={18} />
                         </button>
                       </div>
                     </td>

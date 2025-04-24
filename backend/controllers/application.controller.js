@@ -122,13 +122,17 @@ export const getApplicationsForInternship = async (req, res) => {
     const { internshipId } = req.params;
 
     const applications = await Application.find({ internship: internshipId })
-      .populate("student", "name email department")
+      .populate({
+        path: 'student',
+        select: 'name email department'
+      })
+      .populate('internship', 'title company')
       .sort({ createdAt: -1 });
 
     res.status(200).json(applications);
   } catch (err) {
-    console.error("Get applications error:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error('Get applications error:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 };
 
@@ -148,6 +152,111 @@ export const getStudentApplications = async (req, res) => {
     res.status(200).json(applications);
   } catch (err) {
     console.error("Get student applications error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+
+//24-4-25 thrusday trying to do admin side of the application 
+// Get all internships with application counts for admin dashboard
+export const getInternshipsWithApplications = async (req, res) => {
+  try {
+    const internships = await Internship.find()
+      .select("title company status applicationDeadline")
+      .lean();
+
+    // Get application counts for each internship
+    const internshipsWithCounts = await Promise.all(
+      internships.map(async (internship) => {
+        const count = await Application.countDocuments({
+          internship: internship._id,
+        });
+        return {
+          ...internship,
+          applicationCount: count,
+        };
+      })
+    );
+
+    res.status(200).json(internshipsWithCounts);
+  } catch (err) {
+    console.error("Get internships error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Get detailed application information including full student profile
+export const getFullApplicationDetails = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+
+    const application = await Application.findById(applicationId)
+      .populate({
+        path: "student",
+        select: "-userId -submittedReviews -assignedMentor -progress -feedback",
+      })
+      .populate("internship", "title company description");
+
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    res.status(200).json(application);
+  } catch (err) {
+    console.error("Get full application error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Update application status with enhanced feedback
+export const updateApplicationStatusAdmin = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+    const { status, feedback, rating } = req.body;
+
+    if (!["Pending", "Accepted", "Rejected", "Under Review"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    const application = await Application.findById(applicationId);
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    // Update application
+    application.status = status;
+    application.decisionDate = new Date();
+    
+    if (feedback) {
+      application.feedback = {
+        ...application.feedback,
+        fromAdmin: feedback,
+        ...(rating && { rating: parseInt(rating) }),
+      };
+    }
+
+    await application.save();
+
+    // Update student's appliedInternships status
+    const student = await Student.findOne({ _id: application.student });
+    if (student) {
+      const internshipApplication = student.appliedInternships.find(
+        (app) =>
+          app.internship.toString() === application.internship.toString()
+      );
+      if (internshipApplication) {
+        internshipApplication.status = status;
+        await student.save();
+      }
+    }
+
+    res.status(200).json({
+      message: `Application status updated to ${status}`,
+      application,
+    });
+  } catch (err) {
+    console.error("Status update error:", err);
     res.status(500).json({ error: "Server error" });
   }
 };

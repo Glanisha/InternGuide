@@ -1,23 +1,24 @@
-
 import express from "express";
 import {
   submitApplication,
   updateApplicationStatus,
   getApplicationDetails,
   getApplicationsForInternship,
-  getStudentApplications
+  getStudentApplications,
+  getInternshipsWithApplications,
+  getFullApplicationDetails,
+  updateApplicationStatusAdmin,
 } from "../controllers/application.controller.js";
 import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
-import { applicationUpload } from "../middlewares/upload.middleware.js"; // Changed import
 
 const router = express.Router();
 
-// routes/application.routes.js
+// Student routes
 router.post(
   "/:internshipId/apply",
   protect,
   authorizeRoles("student"),
-  submitApplication // Removed applicationUpload middleware
+  submitApplication
 );
 
 router.get(
@@ -28,6 +29,28 @@ router.get(
 );
 
 // Admin routes
+router.get(
+  "/admin/internships",
+  protect,
+  authorizeRoles("admin"),
+  getInternshipsWithApplications
+);
+
+router.get(
+  "/admin/:applicationId/full",
+  protect,
+  authorizeRoles("admin"),
+  getFullApplicationDetails
+);
+
+router.patch(
+  "/admin/:applicationId/status",
+  protect,
+  authorizeRoles("admin"),
+  updateApplicationStatusAdmin
+);
+
+// Existing routes (keep these for backward compatibility)
 router.patch(
   "/:applicationId/status",
   protect,
