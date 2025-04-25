@@ -39,7 +39,7 @@ const LoginForm = () => {
           navigate('/student');
           break;
         case 'faculty':
-          navigate('/faculty');
+          navigate('/faculty/dashboard');
           break;
         case 'admin':
           navigate('/admin-dashboard');
@@ -48,7 +48,7 @@ const LoginForm = () => {
           navigate('/management/dashboard');
           break;
         case 'viewer':
-          navigate('/viewer/dashboard');
+          navigate('/viewer/dashboard/stats');
           break;
         default:
           navigate('/');

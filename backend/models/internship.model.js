@@ -11,6 +11,7 @@ const InternshipSchema = new mongoose.Schema(
     sdgGoals: [{ type: String }], 
     programOutcomes: [{ type: String }],
     educationalObjectives: [{ type: String }], 
+    email: { type: String },
     applicants: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
     applications: [{ 
       type: mongoose.Schema.Types.ObjectId, 

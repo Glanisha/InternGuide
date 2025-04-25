@@ -15,6 +15,7 @@ export const createInternship = async (req, res) => {
       educationalObjectives,
       applicationDeadline,
       internshipDuration,
+      email
     } = req.body;
 
     const newInternship = new Internship({

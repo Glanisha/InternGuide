@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiFilter, FiArrowLeft, FiUsers } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiFilter, FiArrowLeft, FiUsers, FiMail } from 'react-icons/fi';
 import InternshipForm from './InternshipForm';
 import CoverLetterModal from './CoverLetterModal';
 
@@ -18,6 +18,7 @@ const AdminInternships = () => {
   const [currentApplications, setCurrentApplications] = useState([]);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [showCoverLetterModal, setShowCoverLetterModal] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
 
   // Create axios instance with auth headers
   const api = axios.create({
@@ -43,7 +44,8 @@ const AdminInternships = () => {
     stipend: '',
     location: '',
     mode: '',
-    role: ''
+    role: '',
+    email: '' // Added email field to form data
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -115,6 +117,68 @@ const AdminInternships = () => {
     }
   };
 
+  // Send application to company via email
+  const sendApplicationToCompany = async () => {
+    if (!selectedApplication) return;
+    
+    try {
+      setEmailSending(true);
+      
+      // Get all internships and find the one we need
+      const internshipsResponse = await api.get('/internships');
+      const internshipWithEmail = internshipsResponse.data.find(
+        i => i._id === selectedApplication.internship._id
+      );
+      
+      if (!internshipWithEmail) {
+        throw new Error('Internship not found');
+      }
+      
+      if (!internshipWithEmail.email) {
+        throw new Error('Company email not found for this internship');
+      }
+
+      // Create email content
+      const emailContent = `
+        <h2>New Internship Application</h2>
+        <p>You have received a new application for the position of <strong>${selectedApplication.internship.title}</strong> at <strong>${selectedApplication.internship.company}</strong>.</p>
+        
+        <h3>Applicant Details:</h3>
+        <ul>
+          <li><strong>Name:</strong> ${selectedApplication.student.name}</li>
+          <li><strong>Email:</strong> ${selectedApplication.student.email}</li>
+          <li><strong>Department:</strong> ${selectedApplication.student.department}</li>
+          <li><strong>CGPA:</strong> ${selectedApplication.student.cgpa || 'Not specified'}</li>
+          <li><strong>Skills:</strong> ${selectedApplication.student.skills?.join(', ') || 'Not specified'}</li>
+        </ul>
+        
+        <h3>Application Documents:</h3>
+        <ul>
+          <li><a href="${selectedApplication.resume}" target="_blank">View Resume</a></li>
+          ${selectedApplication.coverLetter ? `<li>Cover Letter: ${selectedApplication.coverLetter}</li>` : ''}
+        </ul>
+        
+        <p>Please review this application at your earliest convenience.</p>
+        
+        <p>Best regards,<br>Internship Portal Team</p>
+      `;
+
+      // Send email
+      await axios.post('http://localhost:8001/sendEmail', {
+        email: internshipWithEmail.email,
+        text: emailContent,
+        subject: `New Application for ${selectedApplication.internship.title} Position`
+      });
+
+      alert('Application sent to company successfully!');
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Failed to send email');
+      console.error('Error sending email:', err);
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
   // Filter internships based on search term and filters
   const filteredInternships = internships.filter(internship => {
     const matchesSearch = internship.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -157,7 +221,8 @@ const AdminInternships = () => {
       stipend: internship.stipend,
       location: internship.location,
       mode: internship.mode,
-      role: internship.role
+      role: internship.role,
+      email: internship.email // Include email in form data
     });
     setEditMode(true);
   };
@@ -305,23 +370,16 @@ const AdminInternships = () => {
                   </a>
                 </div>
                 {selectedApplication.coverLetter && (
-  <div>
-    <p className="text-sm text-neutral-400">Cover Letter</p>
-    <button
-      onClick={() => setShowCoverLetterModal(true)}
-      className="text-blue-400 hover:underline cursor-pointer"
-    >
-      View Cover Letter
-    </button>
-  </div>
-)}
-
-{showCoverLetterModal && (
-  <CoverLetterModal
-    content={selectedApplication.coverLetter}
-    onClose={() => setShowCoverLetterModal(false)}
-  />
-)}
+                  <div>
+                    <p className="text-sm text-neutral-400">Cover Letter</p>
+                    <button
+                      onClick={() => setShowCoverLetterModal(true)}
+                      className="text-blue-400 hover:underline cursor-pointer"
+                    >
+                      View Cover Letter
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -369,7 +427,7 @@ const AdminInternships = () => {
             </div>
           </div>
 
-          <div className="flex space-x-4">
+          <div className="flex flex-wrap gap-4">
             <button
               onClick={() => updateApplicationStatus(selectedApplication._id, 'Accepted')}
               className={`px-4 py-2 rounded-lg ${selectedApplication.status === 'Accepted' ? 'bg-green-700' : 'bg-green-600 hover:bg-green-700'}`}
@@ -391,8 +449,23 @@ const AdminInternships = () => {
             >
               Mark as Under Review
             </button>
+            <button
+              onClick={sendApplicationToCompany}
+              className={`px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 flex items-center gap-2 ${emailSending ? 'opacity-70 cursor-not-allowed' : ''}`}
+              disabled={emailSending}
+            >
+              <FiMail size={16} />
+              {emailSending ? 'Sending...' : `Send to ${selectedApplication.internship.company}`}
+            </button>
           </div>
         </div>
+
+        {showCoverLetterModal && (
+          <CoverLetterModal
+            content={selectedApplication.coverLetter}
+            onClose={() => setShowCoverLetterModal(false)}
+          />
+        )}
       </div>
     );
   }

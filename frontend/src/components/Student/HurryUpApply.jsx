@@ -6,6 +6,7 @@ const HurryUpApply = () => {
   const [internships, setInternships] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchInternships = async () => {
@@ -15,19 +16,22 @@ const HurryUpApply = () => {
             'Content-Type': 'application/json'
           }
         });
-        
+
         const now = new Date();
         const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-        
+
         const processedInternships = response.data
-          .filter(internship => internship.status === 'Open')
+          .filter(internship => {
+            const deadlineDate = new Date(internship.applicationDeadline);
+            return internship.status === 'Open' && deadlineDate >= now;
+          })
           .map(internship => ({
             ...internship,
             deadline: new Date(internship.applicationDeadline),
             isUrgent: new Date(internship.applicationDeadline) <= oneWeekFromNow
           }))
           .sort((a, b) => a.deadline - b.deadline);
-          
+
         setInternships(processedInternships);
         setLoading(false);
       } catch (err) {
@@ -72,18 +76,20 @@ const HurryUpApply = () => {
     );
   }
 
+  const internshipsToDisplay = showAll ? internships : internships.slice(0, 3);
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-semibold text-white mb-2">Hurry Up & Apply</h2>
       <p className="text-neutral-400 mb-6">These opportunities are closing soon. Don't miss out!</p>
-      
+
       <div className="space-y-3">
-        {internships.map((internship) => (
-          <div 
+        {internshipsToDisplay.map((internship) => (
+          <div
             key={internship._id}
             className={`bg-neutral-900/50 backdrop-blur-sm border rounded-xl p-4 transition-all ${
-              internship.isUrgent 
-                ? 'border-green-500/30 hover:border-green-500/50' 
+              internship.isUrgent
+                ? 'border-green-500/30 hover:border-green-500/50'
                 : 'border-white/10 hover:border-blue-500/30'
             }`}
           >
@@ -99,16 +105,16 @@ const HurryUpApply = () => {
               )}
             </div>
 
-            <p className="text-sm text-white mb-4 line-clamp-2">
-              {internship.description}
-            </p>
+            <p className="text-sm text-white mb-4 line-clamp-2">{internship.description}</p>
 
             <div className="grid grid-cols-2 gap-4 text-sm mb-4">
               <div>
                 <p className="text-neutral-400">Deadline</p>
-                <p className={`font-medium ${
-                  internship.isUrgent ? 'text-green-400' : 'text-white'
-                }`}>
+                <p
+                  className={`font-medium ${
+                    internship.isUrgent ? 'text-green-400' : 'text-white'
+                  }`}
+                >
                   {formatDate(internship.deadline)}
                 </p>
               </div>
@@ -121,8 +127,8 @@ const HurryUpApply = () => {
             <div className="flex justify-between items-center">
               <div className="flex flex-wrap gap-2">
                 {internship.requirements.slice(0, 3).map((req, index) => (
-                  <span 
-                    key={index} 
+                  <span
+                    key={index}
                     className="px-2 py-1 text-xs bg-neutral-800 rounded-md text-neutral-300"
                   >
                     {req}
@@ -145,6 +151,17 @@ const HurryUpApply = () => {
           </div>
         ))}
       </div>
+
+      {!showAll && internships.length > 3 && (
+        <div className="text-center mt-4">
+          <button
+            onClick={() => setShowAll(true)}
+            className="px-4 py-2 text-sm bg-white/10 hover:bg-white/20 text-white rounded-lg"
+          >
+            See More
+          </button>
+        </div>
+      )}
     </div>
   );
 };
