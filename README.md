@@ -1,84 +1,183 @@
-﻿
-# Internship Showcase and Tracking Platform
+﻿# Internship Showcase and Tracking Platform  
 
-## Introduction
-The **Internship Showcase and Tracking Platform** is a web-based system designed to showcase internship statistics across various departments, track faculty mentor assignments, and monitor internship progress for students. The platform provides transparency and allows all stakeholders, including students, faculty, management, and employers, to visualize internship data and assess its alignment with academic and sustainability goals.
+## Introduction  
+The **Internship Showcase and Tracking Platform** is a web-based system designed to:  
+- Showcase internship statistics across various departments  
+- Track faculty mentor assignments using **TF-IDF-based matching** for optimal pairings  
+- Monitor internship progress for students with real-time updates  
+- Facilitate communication via **Nodemailer** for automated email notifications  
+- Securely store student resumes using **Firebase Storage**  
 
-## Features
-### 1. Viewers (Public, Employers, Prospective Interns)
-- View department-wise internship statistics.
-- Explore available internships and their alignment with Sustainable Development Goals (SDGs), Program Outcomes (POs), and Program Educational Objectives (PEOs).
-- Filter internships by department, SDG, PO/PEO mapping, or industry sector.
-- Contact internship providers for collaboration or networking.
+The platform provides transparency and allows all stakeholders (students, faculty, management, and employers) to visualize internship data and assess its alignment with academic and sustainability goals.  
 
-### 2. Students (Internship Seekers)
-- Browse and apply for internships.
-- Track application status and deadlines.
-- View assigned faculty mentor details.
-- Monitor internship progress with tasks, deadlines, and learning outcomes.
-- Receive feedback from mentors and industry supervisors.
-- Generate reports on personal skill development and SDG contributions.
+---
 
-### 3. Faculty Coordinators (Mentors, Course Instructors)
-- Assign faculty mentors to students.
-- Monitor internship progress and track milestones.
-- Evaluate student performance based on industry and academic criteria.
-- Collaborate with industry supervisors to assess student progress.
-- Generate reports on internship success rates and SDG alignment.
+## Features  
 
-### 4. Admins (System Moderators, Platform Administrators)
-- Manage internship listings (approve, edit, remove).
-- Assign roles to students, faculty, and industry mentors.
-- Monitor department-wise internship data and student participation rates.
-- Send notifications and alerts for deadlines and mentor assignments.
-- Generate detailed reports on student performance and SDG contributions.
+### 1. Viewers (Public, Employers, Prospective Interns)  
+- View department-wise internship statistics  
+- Explore available internships and their alignment with:  
+  - **Sustainable Development Goals (SDGs)**  
+  - **Program Outcomes (POs)**  
+  - **Program Educational Objectives (PEOs)**  
+- Filter internships by:  
+  - Department  
+  - SDG  
+  - PO/PEO mapping  
+  - Industry sector  
+- Contact internship providers for collaboration or networking  
 
-### 5. Management (Institutional Coordinators, University Officials)
-- View institution-wide internship statistics.
-- Track SDG contribution of internships.
-- Evaluate program success based on student performance and industry collaboration.
-- Generate department-level analytics and insights.
+### 2. Students (Internship Seekers)  
+- Browse and apply for internships  
+- **Upload resumes** securely via **Firebase Storage**  
+- Track application status and deadlines  
+- View **TF-IDF-matched faculty mentor** details  
+- Monitor internship progress with:  
+  - Task tracking  
+  - Deadline reminders  
+  - Learning outcome logs  
+- Receive feedback from mentors and industry supervisors  
+- Generate personalized reports on:  
+  - Skill development  
+  - SDG contributions  
+- Receive automated email alerts (**Nodemailer**) for:  
+  - Application updates  
+  - Mentor assignments  
+  - Deadline reminders  
 
-## Key Functional Requirements
-- **Internship Listing & Management**: Admins and faculty can manage internship postings.
-- **SDG, PO, and PEO Mapping**: Ensure internships align with academic and sustainability goals.
-- **Internship Progress Tracking**: Students can track progress and milestones.
-- **Mentorship Assignment & Communication**: Faculty mentors can guide students.
-- **Feedback & Evaluation**: Regular performance feedback from faculty and industry supervisors.
-- **Reports & Analytics**: Comprehensive reports on student performance and internship success.
-- **User Authentication & Role-Based Access**: Secure login with appropriate role-based permissions.
+### 3. Faculty Coordinators (Mentors, Course Instructors)  
+- View **algorithmically assigned mentees** (TF-IDF matching)  
+- Monitor internship progress and track milestones  
+- Evaluate student performance based on:  
+  - Industry criteria  
+  - Academic rubrics  
+- Collaborate with industry supervisors  
+- Generate reports on:  
+  - Internship success rates  
+  - SDG/PO/PEO alignment  
 
-## Technology Stack
-### Frontend
-- **React.js / Next.js** (for a dynamic and responsive UI)
-### Backend
-- **Node.js with Express.js** (for API development)
-### Database
-- **MongoDB** (for flexible and scalable data storage)
+### 4. Admins (System Moderators, Platform Administrators)  
+- Manage internship listings (approve, edit, remove)  
+- Assign roles to:  
+  - Students  
+  - Faculty  
+  - Industry mentors  
+- Monitor department-wise:  
+  - Internship data  
+  - Student participation rates  
+- Send bulk notifications via **Nodemailer** for:  
+  - Deadline alerts  
+  - Mentor assignments  
+  - System updates  
+- Generate detailed reports on:  
+  - Student performance  
+  - SDG contributions  
 
+### 5. Management (Institutional Coordinators, University Officials)  
+- View institution-wide internship statistics  
+- Track **SDG contributions** of internships  
+- Evaluate program success based on:  
+  - Student performance  
+  - Industry collaboration  
+- Generate department-level analytics:  
+  - Participation trends  
+  - PO/PEO alignment  
+  - Employer feedback  
 
-## Installation & Setup
-### Prerequisites
-Ensure you have the following installed:
-- Node.js
-- MongoDB
-- npm 
+---
 
-### Backend Setup
+## Key Functional Requirements  
+- **Internship Listing & Management**: Admins/faculty can post and moderate opportunities  
+- **TF-IDF Mentor-Mentee Matching**: Automated optimal pairing based on skills/expertise  
+- **SDG/PO/PEO Mapping**: Ensure alignment with academic and sustainability goals  
+- **Nodemailer Integration**: Automated emails for applications, approvals, and alerts  
+- **Firebase Resume Storage**: Secure document upload and retrieval  
+- **Internship Progress Tracking**: Milestones, tasks, and feedback logging  
+- **Role-Based Access Control**: Secure permissions for all user types  
+
+---
+
+## Technology Stack  
+
+### Frontend  
+- **React.js / Next.js**: Dynamic and responsive UI  
+- **Firebase Storage**: Secure resume uploads and management  
+
+### Backend  
+- **Node.js + Express.js**: REST API development  
+- **Nodemailer**: Automated email notifications  
+
+### Database  
+- **MongoDB**: Flexible document storage for internships and user data  
+
+### Algorithms  
+- **TF-IDF (Term Frequency-Inverse Document Frequency)**:  
+  - Analyzes student skills and mentor expertise  
+  - Calculates weighted relevance scores  
+  - Automates optimal mentor assignments  
+
+---
+
+## Installation & Setup  
+
+### Prerequisites  
+- Node.js ≥ v16  
+- MongoDB (Atlas or local)  
+- Firebase Storage credentials  
+- SMTP credentials (for Nodemailer)  
+
+### Backend Setup  
 ```sh
-cd server
-npm install
-npm start
+cd server  
+npm install  
+# Configure .env with:  
+# - MongoDB connection  
+# - Firebase credentials  
+# - Nodemailer SMTP details  
+npm start  
 ```
 
-### Frontend Setup
+### Frontend Setup  
 ```sh
-cd client
-npm install
-npm run dev
+cd client  
+npm install  
+# Configure .env with:  
+# - API endpoint  
+# - Firebase config  
+npm run dev  
 ```
 
-### Environment Variables
-Create a `.env` file in both `server` and `client` directories and configure the required environment variables.
+---
 
+## Environment Variables  
 
+### Backend (`.env`)  
+```ini
+MONGO_URI=your_mongodb_connection_string  
+FIREBASE_CONFIG={"apiKey": "...", "storageBucket": "..."}  
+SMTP_USER=your_email@domain.com  
+SMTP_PASS=your_smtp_password  
+JWT_SECRET=your_jwt_secret  
+```
+
+### Frontend (`.env`)  
+```ini
+REACT_APP_API_URL=http://localhost:5000  
+FIREBASE_CONFIG={"apiKey": "...", "storageBucket": "..."}  
+```
+
+---
+
+## How TF-IDF Mentor Matching Works  
+1. **Data Collection**:  
+   - Students list skills in profiles  
+   - Faculty declare expertise areas  
+2. **Keyword Processing**:  
+   - Extract terms from both groups  
+   - Remove stopwords/stemming  
+3. **TF-IDF Scoring**:  
+   - Calculate term importance weights  
+4. **Cosine Similarity**:  
+   - Compare student-mentor vectors  
+5. **Ranking & Assignment**:  
+   - Automatically assign top matches  

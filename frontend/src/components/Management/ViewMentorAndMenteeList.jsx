@@ -74,7 +74,7 @@ const ViewMentorAndMenteeList = () => {
                   <span className="text-sm text-neutral-300">Department: {faculty.department}</span>
                   <span className="text-sm font-medium">
                     <span className="text-pink-400">{faculty.assignedStudents.length}</span>
-                    <span className="text-neutral-400">/{faculty.mentoringCapacity}</span>
+                    <span className="text-neutral-400">/{faculty.mentoringCapacity+1}</span>
                   </span>
                   <span className={`px-2 py-1 text-xs rounded-full ${faculty.isAvailableForMentoring ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                     {faculty.isAvailableForMentoring ? 'Available' : 'Not Available'}

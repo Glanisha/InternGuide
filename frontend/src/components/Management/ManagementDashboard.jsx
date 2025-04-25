@@ -72,7 +72,7 @@ const ManagementDashboard = () => {
               <span>Internships</span>
             </NavLink>
 
-            <NavLink
+            {/* <NavLink
               to="/management/reports"
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
@@ -81,7 +81,7 @@ const ManagementDashboard = () => {
             >
               <FiFileText size={20} />
               <span>Reports</span>
-            </NavLink>
+            </NavLink> */}
 
             <NavLink
               to="/management/sdg"
