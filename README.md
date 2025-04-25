@@ -100,7 +100,7 @@ The platform provides transparency and allows all stakeholders (students, facult
 ## Technology Stack  
 
 ### Frontend  
-- **React.js / Next.js**: Dynamic and responsive UI  
+- **React.js**: Dynamic and responsive UI  
 - **Firebase Storage**: Secure resume uploads and management  
 
 ### Backend  
