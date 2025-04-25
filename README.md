@@ -1,4 +1,4 @@
-﻿# Internship Showcase and Tracking Platform  
+﻿# Internship Showcase and Tracking Platform 
 
 ## Introduction  
 The **Internship Showcase and Tracking Platform** is a web-based system designed to:  
@@ -8,7 +8,8 @@ The **Internship Showcase and Tracking Platform** is a web-based system designed
 - Facilitate communication via **Nodemailer** for automated email notifications  
 - Securely store student resumes using **Firebase Storage**  
 
-The platform provides transparency and allows all stakeholders (students, faculty, management, and employers) to visualize internship data and assess its alignment with academic and sustainability goals.  
+The platform provides transparency and allows all stakeholders (students, faculty, management, and employers) to visualize internship data and assess its alignment with academic and sustainability goals. 
+This was made as a part of our Full Stack Development Course in Fr. Conceicao Rodrigues College of Engineering (Computer Engineering, Sem 4)
 
 ---
 
