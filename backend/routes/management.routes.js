@@ -21,7 +21,7 @@ router.put("/reviews/:id/status", updateReviewStatus);
 router.get("/reviews/analytics", getReviewAnalytics);
 
 // Faculty and mentee routes
-router.get("/faculty", protect, authorizeRoles("management"), getAllFacultyWithMentees);
+router.get("/faculty", protect, authorizeRoles("management", "admin"), getAllFacultyWithMentees);
 router.get("/faculty/:facultyId/mentees", protect, authorizeRoles("management"), getFacultyMenteesDetails);
 
 // Program analytics routes

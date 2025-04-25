@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import ProtectedRoute from "./components/ProtectedRoute";
-import LandingPage from "./pages/InternGuidePage";
+import LandingPage from "./components/Landing/LandingPage";
 import FacultyDashboard from "./components/Faculty/FacultyDashboard";
 import StudentDashboard from "./components/Student/StudentDashboard";
 import Dashboard from "./components/student/Dashboard";

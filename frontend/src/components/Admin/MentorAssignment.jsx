@@ -38,8 +38,11 @@ export default function MentorAssignment() {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-      setAssignments(null);
-      fetchAllAssignments();
+      // Instead of fetching all assignments, just display a success message
+      setAssignments(prev => ({
+        ...prev,
+        message: "Assignments confirmed successfully!"
+      }));
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to confirm assignments');
       console.error('Error confirming assignments:', err);
@@ -68,13 +71,13 @@ export default function MentorAssignment() {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         }),
-        axios.get('/api/faculty', {
+        axios.get('http://localhost:8000/api/management/faculty', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         })
       ]);
-      
+  
       setAllAssignments({
         students: studentsResponse.data,
         faculty: facultyResponse.data
@@ -86,7 +89,7 @@ export default function MentorAssignment() {
       setIsLoading(false);
     }
   };
-
+  
   const updateAssignment = async (studentId, facultyId) => {
     setIsLoading(true);
     setError(null);
@@ -139,15 +142,7 @@ export default function MentorAssignment() {
           >
             New Assignments
           </button>
-          <button
-            className={`px-4 py-2 ${activeTab === 'existing' ? 'border-b-2 border-blue-500' : ''}`}
-            onClick={() => {
-              setActiveTab('existing');
-              fetchAllAssignments();
-            }}
-          >
-            Existing Assignments
-          </button>
+          
         </div>
 
         {isLoading ? (
