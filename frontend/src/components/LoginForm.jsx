@@ -48,7 +48,7 @@ const LoginForm = () => {
           navigate('/management/dashboard');
           break;
         case 'viewer':
-          navigate('/viewer-dashboard');
+          navigate('/viewer/dashboard');
           break;
         default:
           navigate('/');

@@ -13,7 +13,7 @@ import Messages from "./components/student/Messages";
 import Settings from "./components/student/Settings";
 import ReportPage from "./components/student/ReportPage";
 import InternshipCard from "./components/Management/InternshipCard";
-import ViewerDashboard from "./components/Viewer/ViewerDashboard";
+import ViewerDashboard from "./components/ViewerLiza/ViewerDashboard";
 import ReportPageManage from "./components/Management/ReportPageManage";
 
 // Admin components
@@ -37,6 +37,8 @@ import StatsPage from "./components/Management/StatsPage";
 import InternshipPage from "./components/Management/InternshipPage";
 import SDGPage from "./components/Management/SDGPage";
 import OverallReport from "./components/Management/OverAllReport";
+import ViewerInternships from "./components/ViewerLiza/ViewerInternships";
+import SubmitRequest from "./components/ViewerLiza/SubmitRequest";
 
 const App = () => {
   return (
@@ -82,7 +84,12 @@ const App = () => {
         </Route>
 
 
-        <Route path="/viewer-dashboard" element={<ViewerDashboard/>} />
+        <Route path="/viewer/dashboard" element={<ViewerDashboard />}>
+  {/* <Route index element={<ViewerHome />} /> */}
+  {/* <Route path="mentors" element={<MentorList />} /> */}
+  <Route path="internships" element={<ViewerInternships />} />
+  <Route path="requests" element={<SubmitRequest />} />
+</Route>
 
         <Route path="/" element={<LandingPage />} />
       </Routes>
