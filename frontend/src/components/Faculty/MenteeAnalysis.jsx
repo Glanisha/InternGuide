@@ -39,16 +39,76 @@ const MenteeAnalysis = () => {
     return cacheAge < CACHE_EXPIRY_HOURS;
   };
 
-  // Function to parse the analysis string
+  // Function to parse the analysis string - improved for better error handling
   const parseAnalysis = (analysisString) => {
     try {
       if (!analysisString) return null;
-      const cleanedString = analysisString.replace(/```json/g, '').replace(/```/g, '').trim();
-      return JSON.parse(cleanedString);
+      
+      // More robust cleaning - handle different JSON formats
+      let cleanedString = analysisString;
+      
+      // Remove markdown code blocks if present
+      cleanedString = cleanedString.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      
+      // Fix common JSON issues that might cause parsing errors
+      // Replace unescaped quotes inside strings
+      cleanedString = cleanedString.replace(/(?<=":.*[^\\])"(?=.*,)/g, '\\"');
+      
+      // Attempt to parse with a more robust approach using a try-catch for each step
+      try {
+        return JSON.parse(cleanedString);
+      } catch (parseError) {
+        console.error('Initial JSON parse failed, attempting fallback parsing:', parseError);
+        
+        // Fallback: Try to create a valid JSON object manually
+        // This is a simplified approach - for more complex cases, a proper JSON repair library might be needed
+        const defaultAnalysis = {
+          personalized_insights: {},
+          recommendations: [],
+          overall_performance_summary: "Unable to parse analysis data correctly. Please check the data format."
+        };
+        
+        // Try to extract parts that might be valid
+        try {
+          // Extract insights if possible
+          const insightsMatch = cleanedString.match(/"personalized_insights"\s*:\s*(\{[^}]*\})/);
+          if (insightsMatch && insightsMatch[1]) {
+            try {
+              defaultAnalysis.personalized_insights = JSON.parse(insightsMatch[1]);
+            } catch (e) {
+              console.warn('Could not parse insights:', e);
+            }
+          }
+          
+          // Extract recommendations if possible
+          const recsMatch = cleanedString.match(/"recommendations"\s*:\s*(\[[^\]]*\])/);
+          if (recsMatch && recsMatch[1]) {
+            try {
+              defaultAnalysis.recommendations = JSON.parse(recsMatch[1]);
+            } catch (e) {
+              console.warn('Could not parse recommendations:', e);
+            }
+          }
+          
+          // Extract summary if possible
+          const summaryMatch = cleanedString.match(/"overall_performance_summary"\s*:\s*"([^"]*)"/);
+          if (summaryMatch && summaryMatch[1]) {
+            defaultAnalysis.overall_performance_summary = summaryMatch[1];
+          }
+        } catch (extractError) {
+          console.error('Failed to extract partial data:', extractError);
+        }
+        
+        return defaultAnalysis;
+      }
     } catch (e) {
       console.error('Error parsing analysis:', e);
       setError('Failed to parse analysis data');
-      return null;
+      return {
+        personalized_insights: {},
+        recommendations: [],
+        overall_performance_summary: "Error parsing analysis data"
+      };
     }
   };
 
