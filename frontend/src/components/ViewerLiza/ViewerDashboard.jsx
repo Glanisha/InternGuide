@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
-  FiMenu, FiX, FiHome, FiUsers, FiBookmark, FiFileText, FiLogOut,
+  FiMenu, FiX, FiHome, FiUsers, FiBookmark, FiFileText, FiLogOut,FiBarChart2
 } from 'react-icons/fi';
 
 const ViewerDashboard = () => {
@@ -39,7 +39,7 @@ const ViewerDashboard = () => {
 
         <nav className="p-4 flex flex-col h-[calc(100%-120px)]">
           <div className="space-y-2 flex-1">
-            <NavLink
+            {/* <NavLink
               to="/viewer/dashboard"
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
@@ -48,19 +48,18 @@ const ViewerDashboard = () => {
             >
               <FiHome size={20} />
               <span>Dashboard</span>
-            </NavLink>
+            </NavLink> */}
 
             <NavLink
-              to="/viewer/mentors"
-              onClick={() => setSidebarOpen(false)}
-              className={({ isActive }) =>
-                `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
-              }
-            >
-              <FiUsers size={20} />
-              <span>Find Mentors</span>
-            </NavLink>
-
+  to="/viewer/dashboard/stats"
+  onClick={() => setSidebarOpen(false)}
+  className={({ isActive }) =>
+    `w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${isActive ? 'bg-blue-500/20 text-blue-400' : 'text-neutral-300 hover:bg-white/5'}`
+  }
+>
+  <FiBarChart2 size={20} />
+  <span>See Stats</span>
+</NavLink>
             <NavLink
               to="/viewer/dashboard/internships"
               onClick={() => setSidebarOpen(false)}
@@ -108,7 +107,7 @@ const ViewerDashboard = () => {
           <div className="flex items-center space-x-4">
             <div className="text-right hidden sm:block">
               <p className="text-sm text-neutral-400">Welcome back,</p>
-              <p className="font-medium">Student</p>
+              <p className="font-medium">Viewer</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
               <span className="text-blue-400 font-medium">S</span>

@@ -39,6 +39,7 @@ import SDGPage from "./components/Management/SDGPage";
 import OverallReport from "./components/Management/OverAllReport";
 import ViewerInternships from "./components/ViewerLiza/ViewerInternships";
 import SubmitRequest from "./components/ViewerLiza/SubmitRequest";
+import ViewerStats from "./components/ViewerLiza/ViewerStats";
 
 const App = () => {
   return (
@@ -86,7 +87,7 @@ const App = () => {
 
         <Route path="/viewer/dashboard" element={<ViewerDashboard />}>
   {/* <Route index element={<ViewerHome />} /> */}
-  {/* <Route path="mentors" element={<MentorList />} /> */}
+  <Route path="stats" element={<ViewerStats />} />
   <Route path="internships" element={<ViewerInternships />} />
   <Route path="requests" element={<SubmitRequest />} />
 </Route>
