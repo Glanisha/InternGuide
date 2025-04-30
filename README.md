@@ -1,4 +1,4 @@
-﻿# Internship Showcase and Tracking Platform 
+﻿# InternGuide : Internship Showcase and Tracking Platform 
 
 ## Introduction  
 The **Internship Showcase and Tracking Platform** is a web-based system designed to:  
@@ -10,6 +10,11 @@ The **Internship Showcase and Tracking Platform** is a web-based system designed
 
 The platform provides transparency and allows all stakeholders (students, faculty, management, and employers) to visualize internship data and assess its alignment with academic and sustainability goals. 
 This was made as a part of our Full Stack Development Course in Fr. Conceicao Rodrigues College of Engineering (Computer Engineering, Sem 4)
+
+---
+
+##  Demo  
+[Video Demo](https://drive.google.com/file/d/1Z27QPewM5Ow9hwI_T0peg5mpyTXmA0T3/view?usp=sharing)
 
 ---
 
@@ -119,66 +124,65 @@ This was made as a part of our Full Stack Development Course in Fr. Conceicao Ro
 
 ---
 
-## Installation & Setup  
+## Installation & Setup
 
-### Prerequisites  
+### ⚙️ Prerequisites
 - Node.js ≥ v16  
-- MongoDB (Atlas or local)  
-- Firebase Storage credentials  
-- SMTP credentials (for Nodemailer)  
+- MongoDB (Atlas)  
+- Firebase project  
+- SMTP credentials (Nodemailer)  
+- Python 3 (for TF-IDF)  
 
-### Backend Setup  
-```sh
-cd server  
-npm install  
-# Configure .env with:  
-# - MongoDB connection  
-# - Firebase credentials  
-# - Nodemailer SMTP details  
-npm start  
-```
+---
 
-### Frontend Setup  
+###  Backend Setup  
 ```sh
-cd client  
-npm install  
-# Configure .env with:  
-# - API endpoint  
-# - Firebase config  
-npm run dev  
+cd backend
+npm install
+npm run start
+# .env
+PORT=8000  
+MONGODB_URL=
+JWT_SECRET=  
+JWT_EXPIRES_IN=
+GEMINI_API_KEY= 
+GEMINI_API_URL=
 ```
 
 ---
 
-## Environment Variables  
-
-### Backend (`.env`)  
-```ini
-MONGO_URI=your_mongodb_connection_string  
-FIREBASE_CONFIG={"apiKey": "...", "storageBucket": "..."}  
-SMTP_USER=your_email@domain.com  
-SMTP_PASS=your_smtp_password  
-JWT_SECRET=your_jwt_secret  
-```
-
-### Frontend (`.env`)  
-```ini
-REACT_APP_API_URL=http://localhost:5000  
-FIREBASE_CONFIG={"apiKey": "...", "storageBucket": "..."}  
+###  Frontend Setup  
+```sh
+cd frontend
+npm install
+npm run start
+# .env
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
 ```
 
 ---
 
-## How TF-IDF Mentor Matching Works  
-1. **Data Collection**:  
-   - Students list skills in profiles  
-   - Faculty declare expertise areas  
-2. **Keyword Processing**:  
-   - Extract terms from both groups  
-   - Remove stopwords/stemming  
-3. **TF-IDF Scoring**:  
-   - Calculate term importance weights  
-4. **Cosine Similarity**:  
-   - Compare student-mentor vectors  
-5. **Ranking & Assignment**:  
-   - Automatically assign top matches  
+###  Nodemailer (Email API)  
+```sh
+cd nodemailer/email-api
+npm install
+node server.js
+# .env
+EMAIL_USER=
+EMAIL_PASS=  
+PORT=8001  
+```
+
+---
+
+###  Python TF-IDF Server  
+```sh
+cd python
+pip install -r requirements.txt
+python mentor_matching.py
+```
