@@ -13,8 +13,9 @@ This was made as a part of our Full Stack Development Course in Fr. Conceicao Ro
 
 ---
 
-##  Demo  
-[Video Demo](https://drive.google.com/file/d/1Z27QPewM5Ow9hwI_T0peg5mpyTXmA0T3/view?usp=sharing)
+##  Demo  and PPT
+- [Video Demo](https://drive.google.com/file/d/1Z27QPewM5Ow9hwI_T0peg5mpyTXmA0T3/view?usp=sharing)
+- [PPT](https://drive.google.com/file/d/1FWGbLUsY5n8WkbrO7CjYR6BY0fAzm3MD/view?usp=sharing)
 
 ---
 
