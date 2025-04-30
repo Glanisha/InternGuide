@@ -27,10 +27,43 @@ ChartJS.register(
 const CACHE_KEY = 'menteeAnalysisData';
 const CACHE_EXPIRY_HOURS = 5;
 
+// Mock data for development
+const mockData = {
+  rawData: {
+    facultyName: "Test Faculty",
+    mentees: [
+      { name: "Student 1", appliedInternships: 5, acceptedInternships: 2, rejectedInternships: 3, cgpa: 3.5, skills: ["JavaScript", "React"] },
+      { name: "Student 2", appliedInternships: 7, acceptedInternships: 3, rejectedInternships: 4, cgpa: 3.8, skills: ["Python", "Django"] },
+      { name: "Student 3", appliedInternships: 3, acceptedInternships: 1, rejectedInternships: 2, cgpa: 3.2, skills: ["Java", "Spring"] },
+    ],
+    overallStats: {
+      totalInternships: 20,
+      acceptanceRate: 0.3,
+      averageCompletion: 0.8
+    }
+  },
+  analysis: {
+    analysis: JSON.stringify({
+      personalized_insights: {
+        "Student 1": "This student shows strong technical skills but could improve interview performance.",
+        "Student 2": "Excellent academic performance with good internship conversion rates.",
+        "Student 3": "Needs to apply to more internships to increase chances of acceptance."
+      },
+      recommendations: [
+        "Conduct mock interviews for students",
+        "Focus on communication skills development",
+        "Encourage students to apply to more positions"
+      ],
+      overall_performance_summary: "The cohort shows good technical skills but needs improvement in soft skills and should increase application volume."
+    })
+  }
+};
+
 const MenteeAnalysis = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [usingMockData, setUsingMockData] = useState(false);
 
   // Function to check if cached data is still valid
   const isCacheValid = (cachedData) => {
@@ -61,7 +94,6 @@ const MenteeAnalysis = () => {
         console.error('Initial JSON parse failed, attempting fallback parsing:', parseError);
         
         // Fallback: Try to create a valid JSON object manually
-        // This is a simplified approach - for more complex cases, a proper JSON repair library might be needed
         const defaultAnalysis = {
           personalized_insights: {},
           recommendations: [],
@@ -123,27 +155,57 @@ const MenteeAnalysis = () => {
           return;
         }
 
+        // Check for token
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("Authentication token missing");
+        }
+
         // If no valid cache, make API call
         const response = await axios.get('http://localhost:8000/api/faculty/analytics', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
+        }).catch(error => {
+          // Enhanced error logging
+          if (error.response) {
+            console.error('Server responded with:', error.response.status);
+            console.error('Response data:', error.response.data);
+            console.error('Response headers:', error.response.headers);
+          } else if (error.request) {
+            console.error('No response received:', error.request);
+          } else {
+            console.error('Request setup error:', error.message);
+          }
+          
+          // In development, fall back to mock data
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('API request failed, using mock data instead');
+            setData(mockData);
+            setUsingMockData(true);
+            setLoading(false);
+            return;
+          }
+          
+          throw error;
         });
-        
-        // Update state
-        setData(response.data);
-        setLoading(false);
-        
-        // Cache the new data with timestamp
-        const dataToCache = {
-          data: response.data,
-          timestamp: Date.now()
-        };
-        localStorage.setItem(CACHE_KEY, JSON.stringify(dataToCache));
+
+        // Only update state if we got a real response (not mock data)
+        if (response) {
+          setData(response.data);
+          setLoading(false);
+          
+          // Cache the new data with timestamp
+          const dataToCache = {
+            data: response.data,
+            timestamp: Date.now()
+          };
+          localStorage.setItem(CACHE_KEY, JSON.stringify(dataToCache));
+        }
       } catch (error) {
-        console.error('Error fetching analytics:', error);
-        setError('Failed to fetch data');
+        console.error('Full error object:', error);
+        setError(error.response?.data?.message || error.message || 'Failed to fetch data');
         setLoading(false);
       }
     };
@@ -151,14 +213,51 @@ const MenteeAnalysis = () => {
     fetchData();
   }, []);
 
-  // Clear cache function (optional - can be exposed via UI if needed)
+  // Clear cache function
   const clearCache = () => {
     localStorage.removeItem(CACHE_KEY);
+    setData(null);
+    setLoading(true);
+    setError(null);
+    fetchData(); // Re-fetch data
   };
 
-  if (loading) return <div className="text-center p-10 text-xl text-white">Loading analysis...</div>;
-  if (error) return <div className="text-center p-10 text-xl text-red-400">{error}</div>;
-  if (!data) return <div className="text-center p-10 text-xl text-white">No data available</div>;
+  if (loading) {
+    return (
+      <div className="text-center p-10 text-xl text-white">
+        Loading analysis...
+        {error && <div className="text-red-400 mt-2">{error}</div>}
+      </div>
+    );
+  }
+
+  if (error && !usingMockData) {
+    return (
+      <div className="text-center p-10 text-xl text-red-400">
+        {error}
+        <button 
+          onClick={clearCache}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="text-center p-10 text-xl text-white">
+        No data available
+        <button 
+          onClick={clearCache}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   const { rawData, analysis } = data;
   const mentees = rawData.mentees || [];
@@ -166,7 +265,17 @@ const MenteeAnalysis = () => {
   // Parse the analysis data
   const parsedAnalysis = parseAnalysis(analysis?.analysis);
   if (!parsedAnalysis) {
-    return <div className="text-center p-10 text-xl text-red-400">Error processing analysis data</div>;
+    return (
+      <div className="text-center p-10 text-xl text-red-400">
+        Error processing analysis data
+        <button 
+          onClick={clearCache}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   // Chart data configurations
@@ -281,7 +390,14 @@ const MenteeAnalysis = () => {
 
   return (
     <div className="p-6 space-y-10 bg-black min-h-screen">
-      <h1 className="text-3xl font-bold text-center text-white">Mentee Analysis - {rawData.facultyName}</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-center text-white">Mentee Analysis - {rawData.facultyName}</h1>
+        {usingMockData && (
+          <div className="bg-yellow-500 text-black px-3 py-1 rounded-md text-sm font-bold">
+            Using Mock Data
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Internship Stats Card */}
@@ -307,9 +423,15 @@ const MenteeAnalysis = () => {
           <h2 className="text-xl font-semibold mb-4 text-white">Overall Stats</h2>
           <ul className="text-gray-200 list-disc list-inside space-y-2">
             <li>Total Internships: {rawData.overallStats?.totalInternships || 0}</li>
-            <li>Acceptance Rate: {(rawData.overallStats?.acceptanceRate || 0) * 100}%</li>
-            <li>Average Completion: {(rawData.overallStats?.averageCompletion || 0) * 100}%</li>
+            <li>Acceptance Rate: {((rawData.overallStats?.acceptanceRate || 0) * 100).toFixed(1)}%</li>
+            <li>Average Completion: {((rawData.overallStats?.averageCompletion || 0) * 100).toFixed(1)}%</li>
           </ul>
+          <button 
+            onClick={clearCache}
+            className="mt-4 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+          >
+            Refresh Data
+          </button>
         </div>
       </div>
 

@@ -50,7 +50,6 @@ router.patch(
   updateApplicationStatusAdmin
 );
 
-// Existing routes (keep these for backward compatibility)
 router.patch(
   "/:applicationId/status",
   protect,

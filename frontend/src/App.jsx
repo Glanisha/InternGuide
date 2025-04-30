@@ -15,17 +15,12 @@ import ReportPage from "./components/student/ReportPage";
 import InternshipCard from "./components/Management/InternshipCard";
 import ViewerDashboard from "./components/ViewerLiza/ViewerDashboard";
 import ReportPageManage from "./components/Management/ReportPageManage";
-
-// Admin components
 import AdminLayout from "./components/Admin/AdminLayout";
-import AdminDashboard from "./components/Admin/Dashboard"; // Make sure this exists
-import AdminInternships from "./components/Admin/Internships"; // Renamed to avoid conflict
+import AdminDashboard from "./components/Admin/Dashboard";
+import AdminInternships from "./components/Admin/Internships";
 import MentorAssignment from "./components/Admin/MentorAssignment";
-import AdminSettings from "./components/Admin/Settings"; // Renamed to avoid conflict
-import AdminRequestManager from "./components/Admin/AdminRequestManager"; // adjust path as needed
-
-
-
+import AdminSettings from "./components/Admin/Settings";
+import AdminRequestManager from "./components/Admin/AdminRequestManager";
 import FacultyMentees from "./components/Faculty/FacultyMentees";
 import MenteeAnalysis from "./components/Faculty/MenteeAnalysis";
 import FacultyProfile from "./components/Faculty/FacultyProfile";
@@ -55,17 +50,19 @@ const App = () => {
             <Route path="profile" element={<ProfilePage />} />
             <Route path="messages" element={<Messages />} />
             <Route path="generate-report" element={<ReportPage />} />
-            <Route path="mentor" element={<MentorPage/>} />
+            <Route path="mentor" element={<MentorPage />} />
             <Route index element={<Dashboard />} />
           </Route>
-          
+
+          <Route element={<ProtectedRoute />}>
           <Route path="/faculty" element={<FacultyDashboard />}>
             <Route path="mentees" element={<FacultyMentees />} />
-            <Route path="dashboard" element={<FacultyProfile/>} />
+            <Route path="dashboard" element={<FacultyProfile />} />
             <Route path="analytics" element={<MenteeAnalysis />} />
           </Route>
+          </Route>
 
-          {/* Admin routes */}
+          <Route element={<ProtectedRoute />}>
           <Route path="/admin-dashboard" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="internships" element={<AdminInternships />} />
@@ -74,23 +71,25 @@ const App = () => {
             <Route path="requests" element={<AdminRequestManager />} />
           </Route>
         </Route>
-
-
-        <Route path="/management" element={<ManagementDashboard/>}>
-          <Route path="dashboard" element={<StatsPage/>} />
-          <Route path="internships" element={<InternshipPage/>} />
-          <Route path="sdg" element={<SDGPage/>} />
-          <Route path="mentorship" element={<MentorshipPage/>} />
-          <Route path="reports" element={<OverallReport/>} />
         </Route>
 
+        <Route element={<ProtectedRoute />}>
+        <Route path="/management" element={<ManagementDashboard />}>
+          <Route path="dashboard" element={<StatsPage />} />
+          <Route path="internships" element={<InternshipPage />} />
+          <Route path="sdg" element={<SDGPage />} />
+          <Route path="mentorship" element={<MentorshipPage />} />
+          <Route path="reports" element={<OverallReport />} />
+        </Route>
+        </Route>
 
+        <Route element={<ProtectedRoute />}>
         <Route path="/viewer/dashboard" element={<ViewerDashboard />}>
-  {/* <Route index element={<ViewerHome />} /> */}
-  <Route path="stats" element={<ViewerStats />} />
-  <Route path="internships" element={<ViewerInternships />} />
-  <Route path="requests" element={<SubmitRequest />} />
-</Route>
+          <Route path="stats" element={<ViewerStats />} />
+          <Route path="internships" element={<ViewerInternships />} />
+          <Route path="requests" element={<SubmitRequest />} />
+        </Route>
+        </Route>
 
         <Route path="/" element={<LandingPage />} />
       </Routes>

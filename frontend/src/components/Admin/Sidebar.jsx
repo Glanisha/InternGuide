@@ -83,18 +83,6 @@ export default function Sidebar({ sidebarOpen, toggleSidebar }) {
           <span>Requests</span>
         </Link>
 
-        <Link
-          to="/admin-dashboard/settings"
-          onClick={toggleSidebar}
-          className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
-            currentPath === "settings"
-              ? "bg-blue-500/20 text-blue-400"
-              : "text-neutral-300 hover:bg-white/5"
-          }`}
-        >
-          <FiSettings size={20} />
-          <span>Settings</span>
-        </Link>
       </nav>
 
       <div className="p-4 border-t border-white/10">

@@ -15,8 +15,6 @@ import Student from "./models/student.model.js";
 import adminRoutes from "./routes/admin.routes.js";
 import path from 'path';
 import { fileURLToPath } from 'url';
-import multer from 'multer';
-import chatRoutes from "./routes/chat.route.js";
 import feedbackRoutes from "./routes/feedback.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
 import viewerRoutes from "./routes/viewer.routes.js"
@@ -65,22 +63,19 @@ io.on("connection", async (socket) => {
     const student = await Student.findOne({ userId: socket.user.id }).populate("assignedMentor");
 
     if (!student || !student.assignedMentor) {
-      console.log(`❌ No mentor assigned for Student ID: ${socket.user.id}`);
+      console.log(`No mentor assigned for Student ID: ${socket.user.id}`);
       return socket.disconnect();
     }
 
     const mentorId = student.assignedMentor._id.toString();
     const studentId = socket.user.id.toString();
 
-    // Log connection details
-    console.log(`👥 Student ID: ${studentId} is now connected with Mentor ID: ${mentorId}`);
+    console.log(`Student ID: ${studentId} is now connected with Mentor ID: ${mentorId}`);
 
-    // Create a unique chat room for student and mentor
     const room = `chat_${studentId}_${mentorId}`;
     socket.join(room);
     console.log(`User ${studentId} joined room: ${room}`);
 
-    // Fetch and send previous chat history
     const messages = await Chat.find({
       $or: [
         { senderId: studentId, receiverId: mentorId },
@@ -90,7 +85,6 @@ io.on("connection", async (socket) => {
 
     socket.emit("previousMessages", messages);
 
-    // Listen for new messages
     socket.on("sendMessage", async ({ message }) => {
       try {
         const chatMessage = new Chat({
@@ -100,16 +94,15 @@ io.on("connection", async (socket) => {
         });
         await chatMessage.save();
 
-        // Emit message to both student and mentor in the room
         io.to(room).emit("receiveMessage", chatMessage);
-        console.log(`📩 Message from Student (${studentId}) to Mentor (${mentorId}): ${message}`);
+        console.log(`Message from Student (${studentId}) to Mentor (${mentorId}): ${message}`);
       } catch (error) {
         console.error("Error saving chat message:", error);
       }
     });
 
     socket.on("disconnect", () => {
-      console.log(`❌ Student ID: ${studentId} disconnected.`);
+      console.log(`Student ID: ${studentId} disconnected.`);
     });
   } catch (error) {
     console.error("Error handling chat connection:", error);

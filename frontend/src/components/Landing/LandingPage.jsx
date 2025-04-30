@@ -134,12 +134,7 @@ const Landing = () => {
             >
               About
             </a>
-            <a
-              href="#companies"
-              className={`${textColorSecondary} hover:${textColor} transition-colors`}
-            >
-              Partners
-            </a>
+           
           </div>
         </div>
       </nav>
@@ -201,34 +196,7 @@ const Landing = () => {
         </ContainerScroll>
       </section>
 
-      {/* Companies Section */}
-      <section id="companies" className="relative z-10 py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className={`text-3xl md:text-4xl font-bold ${textColor} mb-4`}>
-              Companies Associated With Us
-            </h2>
-            <p className={`${textColorSecondary} text-lg`}>
-              Trusted by leading companies worldwide
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {companies.map((company, index) => (
-              <div 
-                key={index}
-                className={`flex items-center justify-center p-4 ${cardBgColor} border ${cardBorderColor} rounded-lg backdrop-blur-sm hover:shadow-lg transition-all duration-300`}
-              >
-                <img 
-                  src={company.logo} 
-                  alt={company.name} 
-                  className="h-12 object-contain filter brightness-0 invert"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+    
 
       <section className="relative z-10 py-20 px-4 overflow-hidden">
         <div className="max-w-4xl mx-auto">
@@ -346,12 +314,7 @@ const Landing = () => {
             >
               Privacy
             </a>
-            <a
-              href="#companies"
-              className={`${textColorSecondary} hover:${textColor} transition-colors`}
-            >
-              Partners
-            </a>
+        
           </div>
         </div>
       </footer>

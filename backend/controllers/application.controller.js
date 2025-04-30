@@ -1,13 +1,13 @@
-// controllers/application.controller.js
 import Application from "../models/application.model.js";
 import Internship from "../models/internship.model.js";
 import Student from "../models/student.model.js";
-// controllers/application.controller.js
+
+
 export const submitApplication = async (req, res) => {
   try {
     const { internshipId } = req.params;
     const studentId = req.user?.id;
-    const { coverLetter, resumeUrl } = req.body; // Now getting resumeUrl from body
+    const { coverLetter, resumeUrl } = req.body;
     
     if (!resumeUrl) {
       return res.status(400).json({ message: "Resume URL is required" });
@@ -23,18 +23,16 @@ export const submitApplication = async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    // Create new application
     const application = new Application({
       student: student._id,
       internship: internshipId,
-      resume: resumeUrl, // Store Firebase URL instead of local path
+      resume: resumeUrl, 
       coverLetter: coverLetter || '',
       status: "Pending"
     });
 
     await application.save();
 
-    // Update student's appliedInternships array
     student.appliedInternships.push({
       internship: internship._id,
       status: "Pending",
@@ -42,7 +40,6 @@ export const submitApplication = async (req, res) => {
     });
     await student.save();
 
-    // Update internship's applications array
     internship.applications.push(application._id);
     await internship.save();
 
@@ -70,13 +67,11 @@ export const updateApplicationStatus = async (req, res) => {
       return res.status(404).json({ message: "Application not found" });
     }
 
-    // Update application
     application.status = status;
     application.decisionDate = new Date();
     if (feedback) application.feedback.fromAdmin = feedback;
     await application.save();
 
-    // Update student's appliedInternships status
     const student = await Student.findOne({ _id: application.student });
     if (student) {
       const internshipApplication = student.appliedInternships.find(app => 

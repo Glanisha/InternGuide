@@ -47,6 +47,5 @@ const RequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ Exporting as default so you can import without braces
 const Request = mongoose.model("Request", RequestSchema);
 export default Request;

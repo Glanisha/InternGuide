@@ -1,7 +1,6 @@
 import axios from "axios";
 import Student from "../models/student.model.js";
 import Faculty from "../models/faculty.model.js";
-import mongoose from 'mongoose';
 import Request from "../models/request.model.js";
 import Internship from "../models/internship.model.js";
 import Application from "../models/application.model.js";
@@ -24,7 +23,6 @@ export const assignMentors = async (req, res) => {
       });
       const mentorAssignments = response.data;
       
-      // Instead of saving, return the assignments for review
       res.json({ 
         message: "Mentor assignments generated for review",
         assignments: mentorAssignments,
@@ -38,18 +36,17 @@ export const assignMentors = async (req, res) => {
 };
 
 
+
 export const confirmMentors = async (req, res) => {
   try {
     const { assignments } = req.body;
 
     for (const [studentId, facultyId] of Object.entries(assignments)) {
-      // 1. Update student
       await Student.findByIdAndUpdate(studentId, { assignedMentor: facultyId });
 
-      // 2. Update faculty's assignedStudents
       await Faculty.findByIdAndUpdate(
         facultyId,
-        { $addToSet: { assignedStudents: studentId } } // use $addToSet to avoid duplicates
+        { $addToSet: { assignedStudents: studentId } }
       );
     }
 
@@ -60,15 +57,14 @@ export const confirmMentors = async (req, res) => {
   }
 };
 
-// Fetch all pending requests, optionally filter by requestType
-export const getPendingRequests = async (req, res) => {
-  const { requestType } = req.query; // Accept filter as query param
 
+
+export const getPendingRequests = async (req, res) => {
+  const { requestType } = req.query; 
   try {
-    // If a specific requestType is provided, filter by that type
     const filter = { status: "pending" };
     if (requestType) {
-      filter.requestType = requestType; // Will filter by the requestType if provided
+      filter.requestType = requestType; 
     }
 
     const requests = await Request.find(filter).populate("viewerId");
@@ -80,24 +76,19 @@ export const getPendingRequests = async (req, res) => {
 };
 
 
-// Approve a request
-
 export const approveRequest = async (req, res) => {
   const { requestId } = req.params;
 
   try {
-    // Find the request and populate viewer
     const request = await Request.findById(requestId).populate('viewerId');
 
     if (!request) {
       return res.status(404).json({ error: "Request not found" });
     }
 
-    // Mark request as approved
     request.status = "approved";
     await request.save();
 
-    // Handle internship request
     if (request.requestType === "internship") {
       const newInternship = new Internship({
         title: request.internshipDetails.title,
@@ -125,7 +116,6 @@ export const approveRequest = async (req, res) => {
       });
     }
 
-    // Handle become-mentor request
     else if (request.requestType === "become-mentor") {
       const viewer = request.viewerId;
 
@@ -133,13 +123,11 @@ export const approveRequest = async (req, res) => {
         return res.status(404).json({ error: "Viewer not found" });
       }
 
-      // Find associated user
       const user = await User.findById(viewer._id);
       if (!user) {
         return res.status(404).json({ error: "Associated user not found" });
       }
 
-      // Extract name/email/interests
       const name = request.mentorDetails?.name || viewer.name;
       const email = request.mentorDetails?.email || viewer.email;
 
@@ -163,14 +151,12 @@ export const approveRequest = async (req, res) => {
       });
     }
 
-    // Handle message request
     else if (request.requestType === "message") {
       return res.json({
         message: "Message request approved successfully.",
       });
     }
 
-    // Unknown request type
     else {
       return res.status(400).json({ error: "Unknown request type" });
     }
@@ -181,19 +167,17 @@ export const approveRequest = async (req, res) => {
 };
 
 
-// Reject a request
+
 export const rejectRequest = async (req, res) => {
   const { requestId } = req.params;
 
   try {
-    // Find the request
     const request = await Request.findById(requestId);
 
     if (!request) {
       return res.status(404).json({ error: "Request not found" });
     }
 
-    // Update the request status to rejected
     request.status = "rejected";
     await request.save();
 

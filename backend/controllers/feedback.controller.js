@@ -1,4 +1,3 @@
-// controllers/feedback.controller.js
 import Feedback from "../models/feedback.model.js";
 import Faculty from "../models/faculty.model.js";
 import Student from "../models/student.model.js";

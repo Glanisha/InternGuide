@@ -161,8 +161,7 @@ export const getFacultyAnalytics = async (req, res) => {
       }
     };
 
-    // Prepare prompt for Gemini
-   // Updated prompt in the controller
+    // Prepare prompt for GeminiF
 const prompt = `
 Analyze the following faculty mentee internship data and provide insights ONLY on:
 1. Comparative performance of mentees in their internships (based on available data)

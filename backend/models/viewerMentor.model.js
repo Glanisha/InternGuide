@@ -14,7 +14,7 @@ const viewerMentorSchema = new mongoose.Schema({
   },
   name: String,
   email: String,
-  interests: [String], // Important for TF-IDF matching
+  interests: [String], 
   createdAt: {
     type: Date,
     default: Date.now

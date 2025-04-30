@@ -1,6 +1,5 @@
 import Viewer from '../models/viewer.model.js';
 import Internship from '../models/internship.model.js';
-import mongoose from 'mongoose';
 import Request from '../models/request.model.js';
 
 // Get viewer profile

@@ -1,4 +1,3 @@
-// models/Application.model.js
 import mongoose from "mongoose";
 
 const ApplicationSchema = new mongoose.Schema(

@@ -15,8 +15,6 @@ import {
 } from "../controllers/faculty.controller.js";
 
 
-
-// New notification routes
 router.get("/notifications", protect, authorizeRoles("faculty"), getNotifications);
 router.patch("/notifications/:id/read", protect, authorizeRoles("faculty"), markNotificationAsRead);
 router.patch("/notifications/read-all", protect, authorizeRoles("faculty"), markAllNotificationsAsRead);
